@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, FileText, Menu, X } from "lucide-react"
+import { Home, FileText, LogIn, Menu, X } from "lucide-react"
 import { useState, useEffect } from "react"
 import { cn } from "@/lib/utils"
 
@@ -12,6 +12,12 @@ const navigationItems = [
     href: "/",
     icon: Home,
     description: "Zurück zur Hauptseite"
+  },
+  {
+    name: "Anmelden",
+    href: "/login",
+    icon: LogIn,
+    description: "Zum Login-Bereich"
   },
   {
     name: "Impressum",
