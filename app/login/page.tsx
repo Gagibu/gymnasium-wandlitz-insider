@@ -1,16 +1,7 @@
-import dynamic from "next/dynamic"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
-
-const SiteNavigation = dynamic(
-  () => import("@/components/site-navigation").then((mod) => mod.SiteNavigation),
-  { ssr: false }
-)
-
-const LoginForm = dynamic(
-  () => import("@/components/login-form").then((mod) => mod.LoginForm),
-  { ssr: false }
-)
+import { LoginForm } from "@/components/login-form"
+import { SiteNavigation } from "@/components/site-navigation"
 
 export default function LoginPage() {
   return (
