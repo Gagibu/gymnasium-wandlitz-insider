@@ -119,7 +119,7 @@ export function SiteNavigation() {
           <div className="mt-auto pb-8">
             <div className="border-t border-border pt-6">
               <p className="text-xs text-muted-foreground text-center">
-                v0-gymanisum-wandlitz-insider.vercel.app
+                gymnasium-wandlitz-insider.vercel.app
               </p>
             </div>
           </div>
