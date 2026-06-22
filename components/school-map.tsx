@@ -16,38 +16,38 @@ interface BuildingInfo {
 const buildings: Record<BuildingId, BuildingInfo> = {
   building1: {
     id: "building1",
-    name: "Gebäude A – Hauptgebäude",
-    shortName: "Gebäude A",
+    name: "Turnhalle – Sport",
+    shortName: "Turnhalle",
     description:
-      "Das Hauptgebäude beherbergt die Verwaltung, das Sekretariat und das Lehrerzimmer. Hier befinden sich außerdem die meisten allgemeinen Unterrichtsräume.",
+      "Die Turnhalle beherbergt die die große Halle (GH1 / GH2), die Umkleiden und Toiletten.",
     rooms: [
-      "Sekretariat & Verwaltung",
-      "Lehrerzimmer",
-      "Allgemeine Klassenräume",
-      "Aula",
+      "Große Halle (GH1 / GH2)",
+      "Umkleiden",
+      "Toiletten",
+      "mehr Umkleiden",
     ],
   },
   building2: {
     id: "building2",
-    name: "Gebäude B – Naturwissenschaften",
-    shortName: "Gebäude B",
+    name: "Feldschule – Gesellschaftswissenschaften",
+    shortName: "Feldschule",
     description:
-      "In diesem Gebäude befinden sich die Fachräume für die naturwissenschaftlichen Fächer wie Biologie, Chemie und Physik mit den dazugehörigen Sammlungen.",
+      "In diesem Gebäude befinden sich die Fachräume für die gesellschaftswissenschaftlichen Fächer wie Geschichte, Politische Bildung und Erdkund / Geographie mit den dazugehörigen Fachräumen.",
     rooms: [
-      "Chemie-Fachräume",
-      "Physik-Fachräume",
-      "Biologie-Fachräume",
-      "Computerräume",
+      "Geschichte-Fachräume",
+      "Politische Bildung-Fachräume",
+      "Erdkunde-Fachräume",
+      "Toiletten",
     ],
   },
   building3: {
     id: "building3",
-    name: "Gebäude C – Sport & Mensa",
-    shortName: "Gebäude C",
+    name: "Hauptgebäude – Sport, Mensa, Sprachen, Mathe und Informatik, Musik, Kunst und vieles mehr",
+    shortName: "Hauptgebäude",
     description:
-      "Das größte Gebäude umfasst die Sporthalle, die Umkleiden sowie die Mensa und den Aufenthaltsbereich für die Pausen.",
+      "Das größte Gebäude umfasst die kleine Sporthalle, weitere Umkleiden sowie die Mensa und den Sek II Aufenthaltsbereich für die Pausen.",
     rooms: [
-      "Sporthalle",
+      "kleine Sporthalle",
       "Umkleideräume",
       "Mensa",
       "Aufenthaltsbereich",
