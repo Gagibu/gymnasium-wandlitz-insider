@@ -68,7 +68,7 @@ export default function ComingSoonPage() {
         {/* Domain display */}
         <div className="pt-8 border-t border-border">
           <p className="text-muted-foreground text-sm">
-            v0-gymanisum-wandlitz-insider.vercel.app
+            gymnasium-wandlitz-insider.vercel.app
           </p>
         </div>
       </div>
