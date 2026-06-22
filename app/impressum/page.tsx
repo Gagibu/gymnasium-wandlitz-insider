@@ -50,7 +50,7 @@ Unabhängiges, nicht offizielles Informations- und Schülerprojekt[Privat_Master
               <p>Gymnasium Wandlitz Insider
 Unabhängiges, nicht offizielles Informations- und Schülerprojekt[Privat_Master / Gymnasium Wandlitz]</p>
               <p>[Prenzlauer Ch 130]</p>
-              <p>[16348 Wandlitz]</p>
+              <p>[16348 Wndlitz]</p>
               <p>[NOT OFFICIAL]</p>
               <p>[NICHT OFFIZIELL]</p>
             </div>
