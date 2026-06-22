@@ -36,6 +36,31 @@ Unabhängiges, nicht offizielles Informations- und Schülerprojekt[Privat_Master
             </div>
           </section>
 
+
+
+
+
+        <div className="space-y-8 text-foreground">
+          {/* Angaben gemäß § 5 DDG */}
+          <section className="space-y-2">
+            <h2 className="text-xl font-semibold text-primary">
+              Angaben gemäß § 5 DDG
+            </h2>
+            <div className="text-muted-foreground space-y-1">
+              <p>Gymnasium Wandlitz Insider
+Unabhängiges, nicht offizielles Informations- und Schülerprojekt[Privat_Master / Gymnasium Wandlitz]</p>
+              <p>[Prenzlauer Ch 130]</p>
+              <p>[16348 Wandlitz]</p>
+              <p>[NOT OFFICIAL]</p>
+              <p>[NICHT OFFIZIELL]</p>
+            </div>
+          </section>
+
+
+
+
+
+
           {/* Kontakt */}
           <section className="space-y-2">
             <h2 className="text-xl font-semibold text-primary">Kontakt</h2>
