@@ -44,7 +44,7 @@ Unabhängiges, nicht offizielles Informations- und Schülerprojekt</p>
             <div className="text-muted-foreground space-y-1">
               <p>[Privat_Master / Gymnasium Wandlitz]</p>
               <p>[Prenzlauer Ch 130]</p>
-              <p>[16348 Wndlitz]</p>
+              <p>[16348 Wandlitz]</p>
               <p>[NOT OFFICIAL]</p>
               <p>[NICHT OFFIZIELL]</p>
             </div>
