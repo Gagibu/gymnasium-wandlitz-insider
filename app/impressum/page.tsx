@@ -40,7 +40,6 @@ Unabhängiges, nicht offizielles Informations- und Schülerprojekt[Privat_Master
 
 
 
-        <div className="space-y-8 text-foreground">
           {/* Angaben gemäß § 5 DDG */}
           <section className="space-y-2">
             <h2 className="text-xl font-semibold text-primary">
