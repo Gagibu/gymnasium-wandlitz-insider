@@ -38,7 +38,7 @@ Unabhängiges, nicht offizielles Informations- und Schülerprojekt</p>
               Angaben gemäß § 5 DDG
             </h2>
             <div className="text-muted-foreground space-y-1">
-              <p>Betreiber:</p>
+              <p>Betreiber: </p>
               <p>[Vor- und Nachname]</p> <br>
               <p>Anschrift: </p>
               <p>[Straße und Hausnummer]</p>
