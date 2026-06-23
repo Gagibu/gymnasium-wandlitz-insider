@@ -45,15 +45,11 @@ Unabhängiges, nicht offizielles Informations- und Schülerprojekt</p>
               <p>Betreiber: </p>
               <p>[Vor- und Nachname]</p> <br>
               <p>Anschrift: </p>
-              <p>[NOT OFFICIAL]</p>
-              <p>[NICHT OFFIZIELL]</p>
+              <p>[Straße und Hausnummer]</p>
+              <p>[PLZ Ort]</p>
+              <p>Deutschland</p>
             </div>
           </section>
-
-
-
-
-
 
           {/* Kontakt */}
           <section className="space-y-2">
