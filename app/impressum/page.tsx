@@ -42,9 +42,9 @@ Unabhängiges, nicht offizielles Informations- und Schülerprojekt</p>
               Angaben gemäß § 5 DDG
             </h2>
             <div className="text-muted-foreground space-y-1">
-              <p>[Privat_Master / Gymnasium Wandlitz]</p>
-              <p>[Prenzlauer Ch 130]</p>
-              <p>[16348 Wandlitz]</p>
+              <p>Betreiber: </p>
+              <p>[Vor- und Nachname]</p> <br>
+              <p>Anschrift: </p>
               <p>[NOT OFFICIAL]</p>
               <p>[NICHT OFFIZIELL]</p>
             </div>
