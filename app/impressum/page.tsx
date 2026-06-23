@@ -39,10 +39,11 @@ Unabhängiges, nicht offizielles Informations- und Schülerprojekt</p>
             </h2>
             <div className="text-muted-foreground space-y-1">
               <p>Betreiber: </p>
-              <p>[Vor- und Nachname]</p> <br>
+              <p>{"[Vor- und Nachname]"}</p>
+              <br />
               <p>Anschrift: </p>
-              <p>[Straße und Hausnummer]</p>
-              <p>[PLZ Ort]</p>
+              <p>{"[Straße und Hausnummer]"}</p>
+              <p>{"[PLZ Ort]"}</p>
               <p>Deutschland</p>
             </div>
           </section>
@@ -51,8 +52,8 @@ Unabhängiges, nicht offizielles Informations- und Schülerprojekt</p>
           <section className="space-y-2">
             <h2 className="text-xl font-semibold text-primary">Kontakt und Support</h2>
             <div className="text-muted-foreground space-y-1">
-              <p>E-Mail: [ihre-email@beispiel.de]</p>
-              <p>Telefon: [Ihre Telefonnummer] (optional)</p>
+              <p>{"E-Mail: [ihre-email@beispiel.de]"}</p>
+              <p>{"Telefon: [Ihre Telefonnummer] (optional)"}</p>
             </div>
           </section>
 
@@ -62,8 +63,8 @@ Unabhängiges, nicht offizielles Informations- und Schülerprojekt</p>
               Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV
             </h2>
             <div className="text-muted-foreground space-y-1">
-              <p>[Name des Verantwortlichen]</p>
-              <p>[Adresse]</p>
+              <p>{"[Name des Verantwortlichen]"}</p>
+              <p>{"[Adresse]"}</p>
             </div>
           </section>
 
