@@ -22,88 +22,116 @@ export default function ImpressumPage() {
 
         <div className="space-y-8 text-foreground">
           {/* Gymnasium Wandlitz Insider */}
-          <section className="space-y-2">
+          <section className="space-y-3">
             <h2 className="text-xl font-semibold text-primary">
               Gymnasium Wandlitz Insider
             </h2>
             <div className="text-muted-foreground space-y-1">
-              <p>
-Unabhängiges, nicht offizielles Informations- und Schülerprojekt</p>
+              <p>Unabhängiges, nicht offizielles Informations- und Schülerprojekt</p>
+              <p>[NOT OFFICIAL]</p>
+              <p>[NICHT OFFIZIELL]</p>
             </div>
           </section>
 
           {/* Angaben gemäß § 5 DDG */}
-          <section className="space-y-2">
+          <section className="space-y-3">
             <h2 className="text-xl font-semibold text-primary">
               Angaben gemäß § 5 DDG
             </h2>
             <div className="text-muted-foreground space-y-1">
-              <p>Betreiber: </p>
+              <p>Betreiber:</p>
               <p>{"[Vor- und Nachname]"}</p>
-              <br />
-              <p>Anschrift: </p>
+              <p className="mt-3">Anschrift:</p>
               <p>{"[Straße und Hausnummer]"}</p>
               <p>{"[PLZ Ort]"}</p>
               <p>Deutschland</p>
             </div>
           </section>
 
-          {/* Kontakt */}
-          <section className="space-y-2">
+          {/* Schulbezug */}
+          <section className="space-y-3">
+            <h2 className="text-xl font-semibold text-primary">Schulbezug</h2>
+            <div className="text-muted-foreground space-y-2">
+              <p>Gymnasium Wandlitz</p>
+              <p>Prenzlauer Chaussee 130</p>
+              <p>16348 Wandlitz</p>
+              <p className="mt-3">Diese Anschrift dient ausschließlich der Kennzeichnung des Schulstandorts, auf den sich die Inhalte dieser Website beziehen. Das Gymnasium Wandlitz ist weder Betreiber noch Herausgeber dieser Website.</p>
+              <p>Diese Website wird unabhängig und privat betrieben und steht in keiner offiziellen Verbindung zum Gymnasium Wandlitz, dem Landkreis Barnim oder dem Schulträger.</p>
+            </div>
+          </section>
+
+          {/* Kontakt und Support */}
+          <section className="space-y-3">
             <h2 className="text-xl font-semibold text-primary">Kontakt und Support</h2>
             <div className="text-muted-foreground space-y-1">
               <p>{"E-Mail: [ihre-email@beispiel.de]"}</p>
-              <p>{"Telefon: [Ihre Telefonnummer] (optional)"}</p>
+              <p>{"Telefon: [optional]"}</p>
             </div>
           </section>
 
           {/* Verantwortlich für den Inhalt */}
-          <section className="space-y-2">
+          <section className="space-y-3">
             <h2 className="text-xl font-semibold text-primary">
-              Verantwortlich für den Inhalt nach § 55 Abs. 2 RStV
+              Verantwortlich für den Inhalt gemäß § 18 Abs. 2 MStV
             </h2>
             <div className="text-muted-foreground space-y-1">
-              <p>{"[Name des Verantwortlichen]"}</p>
-              <p>{"[Adresse]"}</p>
+              <p>Verantwortlicher:</p>
+              <p>{"[Vor- und Nachname des Verantwortlichen]"}</p>
+              <p className="mt-3">Anschrift:</p>
+              <p>{"[Straße und Hausnummer]"}</p>
+              <p>{"[PLZ Ort]"}</p>
+              <p>Deutschland</p>
             </div>
           </section>
 
-          {/* Haftungsausschluss */}
-          <section className="space-y-2">
+          {/* Haftung für Inhalte */}
+          <section className="space-y-3">
             <h2 className="text-xl font-semibold text-primary">
               Haftung für Inhalte
             </h2>
             <p className="text-muted-foreground leading-relaxed">
-              Als Diensteanbieter sind wir gemäß § 7 Abs.1 TMG für eigene Inhalte auf diesen
-              Seiten nach den allgemeinen Gesetzen verantwortlich. Nach §§ 8 bis 10 TMG sind
-              wir als Diensteanbieter jedoch nicht verpflichtet, übermittelte oder gespeicherte
-              fremde Informationen zu überwachen oder nach Umständen zu forschen, die auf eine
-              rechtswidrige Tätigkeit hinweisen.
+              Als Diensteanbieter sind wir gemäß den allgemeinen Gesetzen für eigene Inhalte auf diesen Seiten verantwortlich. Trotz sorgfältiger inhaltlicher Kontrolle übernehmen wir keine Gewähr für die Aktualität, Richtigkeit und Vollständigkeit der bereitgestellten Informationen.
             </p>
           </section>
 
           {/* Haftung für Links */}
-          <section className="space-y-2">
+          <section className="space-y-3">
             <h2 className="text-xl font-semibold text-primary">
               Haftung für Links
             </h2>
             <p className="text-muted-foreground leading-relaxed">
-              Unser Angebot enthält Links zu externen Websites Dritter, auf deren Inhalte wir
-              keinen Einfluss haben. Deshalb können wir für diese fremden Inhalte auch keine
-              Gewähr übernehmen. Für die Inhalte der verlinkten Seiten ist stets der jeweilige
-              Anbieter oder Betreiber der Seiten verantwortlich.
+              Diese Website enthält Links zu externen Websites Dritter, auf deren Inhalte wir keinen Einfluss haben. Deshalb können wir für diese fremden Inhalte keine Gewähr übernehmen. Für die Inhalte der verlinkten Seiten ist stets der jeweilige Anbieter oder Betreiber der jeweiligen Seiten verantwortlich.
             </p>
           </section>
 
           {/* Urheberrecht */}
-          <section className="space-y-2">
+          <section className="space-y-3">
             <h2 className="text-xl font-semibold text-primary">Urheberrecht</h2>
             <p className="text-muted-foreground leading-relaxed">
-              Die durch die Seitenbetreiber erstellten Inhalte und Werke auf diesen Seiten
-              unterliegen dem deutschen Urheberrecht. Die Vervielfältigung, Bearbeitung,
-              Verbreitung und jede Art der Verwertung außerhalb der Grenzen des Urheberrechtes
-              bedürfen der schriftlichen Zustimmung des jeweiligen Autors bzw. Erstellers.
+              Die auf dieser Website veröffentlichten Inhalte, Texte, Bilder und sonstigen Werke unterliegen dem deutschen Urheberrecht, soweit nicht anders gekennzeichnet. Jede Art der Verwertung außerhalb der Grenzen des Urheberrechts bedarf der vorherigen Zustimmung des jeweiligen Rechteinhabers.
             </p>
+          </section>
+
+          {/* Hinweis zu Marken- und Namensrechten */}
+          <section className="space-y-3">
+            <h2 className="text-xl font-semibold text-primary">
+              Hinweis zu Marken- und Namensrechten
+            </h2>
+            <p className="text-muted-foreground leading-relaxed">
+              Die Nennung von Schulnamen, Marken, Logos oder sonstigen geschützten Bezeichnungen erfolgt ausschließlich zu Informationszwecken. Alle Rechte an den jeweiligen Bezeichnungen verbleiben bei den jeweiligen Rechteinhabern.
+            </p>
+          </section>
+
+          {/* Dieses Impressum gilt für folgende Internetauftritte */}
+          <section className="space-y-3">
+            <h2 className="text-xl font-semibold text-primary">
+              Dieses Impressum gilt für folgende Internetauftritte
+            </h2>
+            <ul className="text-muted-foreground space-y-1 list-disc list-inside">
+              <li>Gymnasium-wandlitz-insider.de</li>
+              <li>Gymnasium-wandlitz-insider.vercel.app</li>
+              <li>v0-Gymnasium-wandlitz-insider.vercel.app</li>
+            </ul>
           </section>
         </div>
 
