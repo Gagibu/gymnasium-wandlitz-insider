@@ -49,7 +49,7 @@ Unabhängiges, nicht offizielles Informations- und Schülerprojekt</p>
 
           {/* Kontakt */}
           <section className="space-y-2">
-            <h2 className="text-xl font-semibold text-primary">Kontakt</h2>
+            <h2 className="text-xl font-semibold text-primary">Kontakt und Support</h2>
             <div className="text-muted-foreground space-y-1">
               <p>E-Mail: [ihre-email@beispiel.de]</p>
               <p>Telefon: [Ihre Telefonnummer] (optional)</p>
