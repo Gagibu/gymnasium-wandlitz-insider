@@ -32,10 +32,6 @@ Unabhängiges, nicht offizielles Informations- und Schülerprojekt</p>
             </div>
           </section>
 
-
-
-
-
           {/* Angaben gemäß § 5 DDG */}
           <section className="space-y-2">
             <h2 className="text-xl font-semibold text-primary">
