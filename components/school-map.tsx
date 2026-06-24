@@ -73,7 +73,7 @@ export function SchoolMap() {
   return (
     <div className="flex flex-col gap-8">
       {/* Floor plan */}
-      <div className="bg-card border border-border rounded-xl p-4 md:p-6">
+      <div className="bg-card border border-border rounded-xl p-0.5 md:p-6">
         <svg
           viewBox="0 0 239.73793 138.58737"
           className="w-full h-auto"
