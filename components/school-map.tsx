@@ -113,8 +113,8 @@ export function SchoolMap() {
               style={{ strokeWidth: 1.2 }}
               width="41.79221"
               height="23.180557"
-              x="135.785004"
-              y="-22.656610"
+              x="114.010298"
+              y="23.879160"
               transform="rotate(50.254519)"
             />
             <path
