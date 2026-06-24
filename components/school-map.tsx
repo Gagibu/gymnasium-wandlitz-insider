@@ -75,7 +75,7 @@ export function SchoolMap() {
       {/* Floor plan */}
       <div className="bg-card border border-border rounded-xl p-4 md:p-6">
         <svg
-          viewBox="0 0 325.70209 259.55624"
+          viewBox="0 0 239.73793 138.58737"
           className="w-full h-auto"
           role="group"
           aria-label="Interaktiver Schulplan mit drei anklickbaren Gebäuden"
