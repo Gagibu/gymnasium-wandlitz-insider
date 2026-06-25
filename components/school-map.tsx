@@ -7,7 +7,7 @@ type BuildingId =
   | "building1"
   | "building2"
   | "haus2"
-  | "haus4"
+  | "haus3"
   | "haus5"
   | "foyer"
   | "essenraum"
@@ -29,7 +29,7 @@ const buildings: Record<BuildingId, BuildingInfo> = {
     description:
       "Die Turnhalle beherbergt die die große Halle (GH1 / GH2), die Umkleiden und Toiletten.",
     rooms: [
-      "Große Halle (GH1 / GH2)",
+      "Große Halle (gH1 / gH2)",
       "Umkleiden",
       "Toiletten",
       "mehr Umkleiden",
@@ -40,7 +40,7 @@ const buildings: Record<BuildingId, BuildingInfo> = {
     name: "Feldschule – Gesellschaftswissenschaften",
     shortName: "Feldschule",
     description:
-      "In diesem Gebäude befinden sich die Fachräume für die gesellschaftswissenschaftlichen Fächer wie Geschichte, Politische Bildung und Erdkund / Geographie mit den dazugehörigen Fachräumen.",
+      "In diesem Gebäude befinden sich die Fachräume für die gesellschaftswissenschaftlichen Fächer wie Geschichte, Politische Bildung und Erdkund / Geographie mit den dazugehörigen Fachräumen. Haus 4: (050; 051; 052; 053; 054; 055)",
     rooms: [
       "Geschichte-Fachräume",
       "Politische Bildung-Fachräume",
@@ -50,16 +50,21 @@ const buildings: Record<BuildingId, BuildingInfo> = {
   },
     haus2: {
     id: "haus2",
-    name: "Haus 2",
+    name: "Haus 2 - Sprachenunterricht",
     shortName: "Haus 2",
     description: "...",
-    rooms: [],
+    rooms: [
+      "Aula",
+      "kleine Sporthalle",
+      "Sekretariat",
+      "Toiletten",
+    ],
   },
 
-  haus4: {
-    id: "haus4",
-    name: "Haus 4",
-    shortName: "Haus 4",
+  haus3: {
+    id: "haus3",
+    name: "Haus 3",
+    shortName: "Haus 3",
     description: "...",
     rooms: [],
   },
@@ -176,18 +181,18 @@ export function SchoolMap() {
               d="m 154.123894,51.578252 -3.05336,2.39381 -12.58914,-15.623807 -2.88773,2.327007 -3.60797,-4.477221 -39.39364,31.742681 -1.93484,-2.49389 -1.88945,1.46622 -10.42507,-13.436369 1.9934,-1.5464 -1.30539,-1.682627 14.00585,-10.86626 -10.64526,-13.72143 -15.92326,12.353753 -4.38255,-5.649471 1.79551,-1.392565 9.6e-4,0.0012 12.19171,-9.459754 -7.58435,-9.775326 -12.191628,9.459025 4.724204,6.08947 -1.795596,1.393293 -0.0016,-0.002 -2.779521,2.156805 7.243011,9.335735 -0.0748,0.05794 -9.952509,-12.82779 2.002742,-1.553722 L 46.572280,14.129716 23.662558,31.903689 18.868293,25.724027 -0.861848,41.031490 13.024901,58.931062 32.755049,43.623594 l -0.0016,-0.002 17.795726,-13.807306 9.952426,12.828518 -2.239161,1.737105 -1.827892,-2.35579 -9.553045,7.411403 1.827886,2.355795 -17.164037,13.317323 10.645659,13.7211 27.338603,-21.21072 13.79965,17.78596 -5.77862,4.65584 10.08009,12.50975 2.81029,-2.26498 17.25782,21.41799 -13.3128,10.72675 9.8641,12.24178 24.84258,-20.0182 -9.86378,-12.24137 -1.58502,1.27746 -17.25822,-21.41768 40.75551,-32.839924 6.07642,7.540364 -7.02703,5.50916 11.23609,14.33183 -11.69207,9.16652 9.89253,12.61809 25.61192,-20.07964 -5.79005,-7.38532 0.0134,-0.0104 z"
             />
             <path
-              id="haus4"
+              id="haus3"
               role="button"
               tabIndex={0}
               aria-label="Gebäude B – Naturwissenschaften"
-              onClick={() => handleSelect("haus4")}
+              onClick={() => handleSelect("haus3")}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault()
-                  handleSelect("haus4")
+                  handleSelect("haus3")
                 }
               }}
-              className={buildingClass("haus4", true)}
+              className={buildingClass("haus3", true)}
               style={{ strokeWidth: 1.2 }}
               d="m -0.861850,41.031490 19.730141,-15.307463 4.794265,6.179662 22.909723,-17.773973 9.09134,11.716843 -2.00274,1.553722 9.9525,12.827791 -3.11178,2.414733 -9.95243,-12.828517 -37.52427,29.116775 z"
             />
