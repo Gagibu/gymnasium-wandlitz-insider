@@ -187,7 +187,7 @@ export function SchoolMap() {
                   handleSelect("haus4")
                 }
               }}
-              className={buildingClass("haus4")}
+              className={buildingClass("haus4", true)}
               style={{ strokeWidth: 1.2 }}
               d="m -0.861850,41.031490 19.730141,-15.307463 4.794265,6.179662 22.909723,-17.773973 9.09134,11.716843 -2.00274,1.553722 9.9525,12.827791 -3.11178,2.414733 -9.95243,-12.828517 -37.52427,29.116775 z"
             />
