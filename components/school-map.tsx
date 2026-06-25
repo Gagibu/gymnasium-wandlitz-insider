@@ -203,7 +203,7 @@ export function SchoolMap() {
                   handleSelect("essenraum")
                 }
               }}
-              className={buildingClass("essenraum")}
+              className={buildingClass("essenraum", true)}
               style={{ strokeWidth: 1.2 }}
               d="m 66.468029,38.013718 -4.38255,-5.64947 13.98818,-10.851119 -7.58435,-9.775326 -12.19162,9.4590248 4.7242,6.0894702 -4.57672,3.548098 7.24301,9.335735 z"
             />
@@ -219,7 +219,7 @@ export function SchoolMap() {
                   handleSelect("haus1")
                 }
               }}
-              className={buildingClass("haus1")}
+              className={buildingClass("haus1", true)}
               style={{ strokeWidth: 1.2 }}
               d="m 79.030699,50.247655 14.00585,-10.86626 -10.64526,-13.721429 -24.12885,18.719945 -1.82789,-2.355789 -9.55305,7.411402 1.82789,2.355794 -17.164038,13.317323 10.645658,13.721101 27.3386,-21.210722 z"
             />
@@ -235,7 +235,7 @@ export function SchoolMap() {
                   handleSelect("foyer")
                 }
               }}
-              className={buildingClass("foyer")}
+              className={buildingClass("foyer", true)}
               style={{ strokeWidth: 1.2 }}
               d="m 69.529609,57.619020 13.79965,17.785961 9.26279,-7.464261 -1.93484,-2.493888 -1.88945,1.46622 -10.42507,-13.43637 1.9934,-1.546399 -1.30539,-1.682628 z"
             />
@@ -251,7 +251,7 @@ export function SchoolMap() {
                   handleSelect("haus2")
                 }
               }}
-              className={buildingClass("haus2")}
+              className={buildingClass("haus2", true)}
               style={{ strokeWidth: 1.2 }}
               d="m 87.630729,92.570571 2.81029,-2.264979 17.25782,21.417992 -13.3128,10.72675 9.8641,12.24178 24.84258,-20.0182 -9.86378,-12.241373 -1.58502,1.277459 -17.25822,-21.417679 40.75551,-32.839925 -5.54755,-8.777133 -3.60797,-4.477222 -54.43505,43.862781 z"
             />
@@ -267,7 +267,7 @@ export function SchoolMap() {
                   handleSelect("haus5")
                 }
               }}
-              className={buildingClass("haus5")}
+              className={buildingClass("haus5", true)}
               style={{ strokeWidth: 1.2 }}
               d="m 149.627149,98.618361 25.61192,-20.079639 -21.11518,-26.96047 -3.05336,2.39381 -12.58914,-15.623807 -2.88773,2.327008 5.54755,8.777133 6.07642,7.540366 -7.02703,5.509159 11.23609,14.331831 -11.69207,9.166519 z"
             />
