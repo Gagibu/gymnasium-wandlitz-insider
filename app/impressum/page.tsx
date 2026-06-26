@@ -28,6 +28,7 @@ export default function ImpressumPage() {
             </h2>
             <div className="text-muted-foreground space-y-1">
               <p>Unabhängiges, nicht offizielles Informations- und Schülerprojekt</p>
+              <p>Diese Website ist ein privates, unabhängiges Schülerprojekt. Sie wird weder vom Gymnasium Wandlitz noch vom Landkreis Barnim oder einer sonstigen öffentlichen Stelle betrieben, herausgegeben oder redaktionell verantwortet. Sämtliche Inhalte spiegeln ausschließlich die Auffassung der jeweiligen Betreiber oder Autoren wider.</p>
               <p>[NOT OFFICIAL]</p>
               <p>[NICHT OFFIZIELL]</p>
             </div>
@@ -128,9 +129,11 @@ export default function ImpressumPage() {
               Dieses Impressum gilt für folgende Internetauftritte
             </h2>
             <ul className="text-muted-foreground space-y-1 list-disc list-inside">
-              <li>Gymnasium-wandlitz-insider.de</li>
-              <li>Gymnasium-wandlitz-insider.vercel.app</li>
-              <li>v0-Gymnasium-wandlitz-insider.vercel.app</li>
+              <li>gymnasium-wandlitz-insider.de</li>
+              <li>gymnasium-wandlitz-insider.vercel.app</li>
+              <li>v0-gymnasium-wandlitz-insider.vercel.app</li>
+              <li>gw-insider.de</li>
+              <li>gw-insider.vercel.app</li>
             </ul>
           </section>
         </div>
