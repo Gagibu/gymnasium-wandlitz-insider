@@ -1,11 +1,3 @@
-export const metadata = {
-  title: "Gymnasium Wandlitz Insider",
-  description: "...",
-
-  verification: {
-    google: "e0eYfTgXKlFT8q0NPh8rIKeT4s5Nhz_JoX2BYj6N-pc",
-  },
-}
 import { Construction, Clock } from "lucide-react"
 import Link from "next/link"
 import { PWAInstallButton } from "@/components/pwa-install-button"
