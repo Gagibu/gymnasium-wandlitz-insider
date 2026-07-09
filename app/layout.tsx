@@ -10,6 +10,9 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: 'Gymnasium Wandlitz Insider - Coming Soon',
   description: 'Diese Website befindet sich derzeit im Aufbau. Bald verfügbar!',
+  verification: {
+    google: "e0eYfTgXKlFT8q0NPh8rIKeT4s5Nhz_JoX2BYj6N-pc",
+  },
   generator: 'v0.app',
   manifest: '/manifest.json',
   appleWebApp: {
@@ -51,9 +54,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="de">
-      <head>
-        <meta name="google-site-verification" content="e0eYfTgXKlFT8q0NPh8rIKeT4s5Nhz_JoX2BYj6N-pc" />
-      </head>
       <body className="font-sans antialiased">
         {children}
         <Analytics />
