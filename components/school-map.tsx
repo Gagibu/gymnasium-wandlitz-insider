@@ -539,7 +539,7 @@ export function SchoolMap() {
           <button
             onClick={resetZoom}
             className={cn(
-              "absolute bottom-4 right-4 md:bottom-6 md:right-6",
+              "absolute bottom-3 right-4 md:bottom-6 md:right-6",
               "px-3 py-1.5 rounded-lg text-xs font-medium border transition-all duration-200",
               "bg-card border-border text-foreground hover:bg-secondary hover:text-foreground",
               "animate-in fade-in slide-in-from-bottom-1 duration-200"
@@ -549,7 +549,7 @@ export function SchoolMap() {
           </button>
         )}
 
-        {/* Hint text – mb-14 reserves space so it never overlaps the corner controls */}
+        {/* Hint text */}
         <p className="text-center text-sm text-muted-foreground mt-4">
           Klicke auf ein Gebäude oder einen Bereich, um mehr zu erfahren.
         </p>
