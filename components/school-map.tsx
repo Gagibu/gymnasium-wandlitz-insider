@@ -123,6 +123,9 @@ export function SchoolMap() {
   const lastPinchMidRef = useRef({ x: 0, y: 0 })
   const isDraggingRef = useRef(false)
   const lastMousePosRef = useRef({ x: 0, y: 0 })
+  // Single-finger touch pan
+  const isTouchPanningRef = useRef(false)
+  const lastTouchPosRef = useRef({ x: 0, y: 0 })
 
   // Auto-clear selection when building becomes unavailable on floor switch
   const handleFloorChange = (newFloor: Floor) => {
@@ -235,31 +238,50 @@ export function SchoolMap() {
   const handleTouchStart = useCallback((e: TouchEvent) => {
     if (e.touches.length === 2) {
       isPinchingRef.current = true
+      isTouchPanningRef.current = false
       lastPinchDistRef.current = getTouchDist(e.touches)
       lastPinchMidRef.current = getTouchMid(e.touches)
+    } else if (e.touches.length === 1) {
+      // Single-finger pan only when zoomed in
+      if (zoom > 1) {
+        isTouchPanningRef.current = true
+        lastTouchPosRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
+      }
     }
-  }, [])
+  }, [zoom])
 
   const handleTouchMove = useCallback(
     (e: TouchEvent) => {
-      if (!isPinchingRef.current || e.touches.length !== 2) return
-      e.preventDefault()
-      const dist = getTouchDist(e.touches)
-      const mid = getTouchMid(e.touches)
-      const scale = dist / lastPinchDistRef.current
-      setZoom((prev) => {
-        const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, prev * scale))
-        zoomTowards(newZoom, mid.x, mid.y)
-        return prev
-      })
-      lastPinchDistRef.current = dist
-      lastPinchMidRef.current = mid
+      if (e.touches.length === 2 && isPinchingRef.current) {
+        e.preventDefault()
+        const dist = getTouchDist(e.touches)
+        const mid = getTouchMid(e.touches)
+        const scale = dist / lastPinchDistRef.current
+        setZoom((prev) => {
+          const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, prev * scale))
+          zoomTowards(newZoom, mid.x, mid.y)
+          return prev
+        })
+        lastPinchDistRef.current = dist
+        lastPinchMidRef.current = mid
+      } else if (e.touches.length === 1 && isTouchPanningRef.current) {
+        e.preventDefault()
+        const touch = e.touches[0]
+        const dx = touch.clientX - lastTouchPosRef.current.x
+        const dy = touch.clientY - lastTouchPosRef.current.y
+        lastTouchPosRef.current = { x: touch.clientX, y: touch.clientY }
+        const container = containerRef.current
+        if (!container) return
+        const { width: cw, height: ch } = container.getBoundingClientRect()
+        setPan((prev) => clampPan(prev.x + dx, prev.y + dy, zoom, cw, ch))
+      }
     },
-    [zoomTowards]
+    [zoomTowards, clampPan, zoom]
   )
 
-  const handleTouchEnd = useCallback(() => {
-    isPinchingRef.current = false
+  const handleTouchEnd = useCallback((e: TouchEvent) => {
+    if (e.touches.length < 2) isPinchingRef.current = false
+    if (e.touches.length === 0) isTouchPanningRef.current = false
   }, [])
 
   // Attach wheel and touch listeners (passive: false to allow preventDefault)
@@ -488,50 +510,49 @@ export function SchoolMap() {
           </div>
         </div>
 
-        <p className="text-center text-sm text-muted-foreground mt-4">
+        {/* Hint text – mb-14 reserves space so it never overlaps the corner controls */}
+        <p className="text-center text-sm text-muted-foreground mt-4 mb-14">
           Klicke auf ein Gebäude oder einen Bereich, um mehr zu erfahren.
         </p>
 
-        {/* Bottom-right controls: Reset Zoom + Floor selector */}
-        <div className="absolute bottom-6 right-4 md:bottom-8 md:right-6 flex flex-col items-end gap-2">
-          {/* Reset Zoom button – only visible when zoomed in */}
-          {zoom > 1 && (
+        {/* Bottom-left: Floor selector */}
+        <div
+          className="absolute bottom-4 left-4 md:bottom-6 md:left-6 flex gap-1 bg-card border border-border rounded-lg p-1 shadow-sm"
+          role="group"
+          aria-label="Etagenauswahl"
+        >
+          {([1, 2, 3] as Floor[]).map((f) => (
             <button
-              onClick={resetZoom}
+              key={f}
+              onClick={() => handleFloorChange(f)}
               className={cn(
-                "px-3 py-1.5 rounded-lg text-xs font-medium border transition-all duration-200",
-                "bg-card border-border text-foreground hover:bg-secondary hover:text-foreground",
-                "animate-in fade-in slide-in-from-bottom-1 duration-200"
+                "w-9 h-9 rounded-md text-sm font-medium transition-all duration-200",
+                floor === f
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary"
               )}
+              aria-pressed={floor === f}
+              aria-label={floorLabels[f]}
             >
-              Zoom zurücksetzen
+              {f}
             </button>
-          )}
-
-          {/* Floor selector */}
-          <div
-            className="flex gap-1 bg-card border border-border rounded-lg p-1 shadow-sm"
-            role="group"
-            aria-label="Etagenauswahl"
-          >
-            {([1, 2, 3] as Floor[]).map((f) => (
-              <button
-                key={f}
-                onClick={() => handleFloorChange(f)}
-                className={cn(
-                  "w-9 h-9 rounded-md text-sm font-medium transition-all duration-200",
-                  floor === f
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-                )}
-                aria-pressed={floor === f}
-                aria-label={floorLabels[f]}
-              >
-                {f}
-              </button>
-            ))}
-          </div>
+          ))}
         </div>
+
+        {/* Bottom-right: Reset Zoom button – only visible when zoomed in */}
+        {zoom > 1 && (
+          <button
+            onClick={resetZoom}
+            className={cn(
+              "absolute bottom-4 right-4 md:bottom-6 md:right-6",
+              "px-3 py-1.5 rounded-lg text-xs font-medium border transition-all duration-200",
+              "bg-card border-border text-foreground hover:bg-secondary hover:text-foreground",
+              "animate-in fade-in slide-in-from-bottom-1 duration-200"
+            )}
+          >
+            Zoom zurücksetzen
+          </button>
+        )}
       </div>
 
       {/* Building details */}
