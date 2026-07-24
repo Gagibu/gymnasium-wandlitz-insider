@@ -510,11 +510,6 @@ export function SchoolMap() {
           </div>
         </div>
 
-        {/* Hint text – mb-14 reserves space so it never overlaps the corner controls */}
-        <p className="text-center text-sm text-muted-foreground mt-4 mb-14">
-          Klicke auf ein Gebäude oder einen Bereich, um mehr zu erfahren.
-        </p>
-
         {/* Bottom-left: Floor selector */}
         <div
           className="absolute bottom-4 left-4 md:bottom-6 md:left-6 flex gap-1 bg-card border border-border rounded-lg p-1 shadow-sm"
@@ -553,6 +548,13 @@ export function SchoolMap() {
             Zoom zurücksetzen
           </button>
         )}
+
+        {/* Hint text – mb-14 reserves space so it never overlaps the corner controls */}
+        <p className="text-center text-sm text-muted-foreground mt-4">
+          Klicke auf ein Gebäude oder einen Bereich, um mehr zu erfahren.
+        </p>
+
+        
       </div>
 
       {/* Building details */}
