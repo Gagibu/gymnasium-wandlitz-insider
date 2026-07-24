@@ -550,7 +550,7 @@ export function SchoolMap() {
         )}
 
         {/* Hint text */}
-        <p className="text-center text-sm text-muted-foreground mt-4">
+        <p className="text-center text-sm text-muted-foreground mt-4 mb-14">
           Klicke auf ein Gebäude oder einen Bereich, um mehr zu erfahren.
         </p>
 
