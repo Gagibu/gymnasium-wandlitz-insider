@@ -553,12 +553,12 @@ export function SchoolMap() {
             Zoom zurücksetzen
           </button>
         )}
+        {/* Hint text  */}
+        <p className="text-center text-sm text-muted-foreground mt-4">
+          Klicke auf ein Gebäude oder einen Bereich, um mehr zu erfahren.
+        </p>
       </div>
 
-      {/* Hint text – below the map card, never overlaps anything */}
-      <p className="text-center text-sm text-muted-foreground -mt-4">
-        Klicke auf ein Gebäude oder einen Bereich, um mehr zu erfahren.
-      </p>
 
       {/* Building details */}
       <div aria-live="polite">
