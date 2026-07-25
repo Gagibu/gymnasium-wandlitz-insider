@@ -515,13 +515,7 @@ export function SchoolMap() {
           </div>
         </div>
 
-        {/* Floor selector – floats over map, bottom-left */}
-        <div
-          className="absolute bottom-4 left-4 md:bottom-5 md:left-5 flex gap-1 bg-card/90 backdrop-blur-sm border border-border rounded-lg p-1 shadow-md"
-          role="group"
-          aria-label="Etagenauswahl"
-        >
-          {([1, 2, 3] as Floor[]).map((f) => (
+        {([1, 2, 3] as Floor[]).map((f) => (
             <button
               key={f}
               onClick={() => handleFloorChange(f)}
@@ -553,6 +547,14 @@ export function SchoolMap() {
             Zoom zurücksetzen
           </button>
         )}
+
+        {/* Floor selector – floats over map, bottom-left */}
+        <div
+          className="absolute bottom-4 left-4 md:bottom-5 md:left-5 flex gap-1 bg-card/90 backdrop-blur-sm border border-border rounded-lg p-1 shadow-md"
+          role="group"
+          aria-label="Etagenauswahl"
+        >
+          
         {/* Hint text  */}
         <p className="text-center text-sm text-muted-foreground mt-4">
           Klicke auf ein Gebäude oder einen Bereich, um mehr zu erfahren.
