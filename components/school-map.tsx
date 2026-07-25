@@ -555,10 +555,11 @@ export function SchoolMap() {
           aria-label="Etagenauswahl"
         >
           
-        {/* Hint text  */}
-        <p className="text-center text-sm text-muted-foreground mt-4">
-          Klicke auf ein Gebäude oder einen Bereich, um mehr zu erfahren.
-        </p>
+          {/* Hint text  */}
+          <p className="text-center text-sm text-muted-foreground mt-4">
+            Klicke auf ein Gebäude oder einen Bereich, um mehr zu erfahren.
+          </p>
+        </div>
       </div>
 
 
