@@ -539,33 +539,28 @@ export function SchoolMap() {
           ))}
         </div>
 
-          {/* Reset Zoom – floats over map, bottom-right; only visible when zoomed in */}
-          {zoom > 1 && (
-            <button
-              onClick={resetZoom}
-              className={cn(
-                "absolute bottom-4 right-4 md:bottom-5 md:right-5",
-                "px-3 py-1.5 rounded-lg text-xs font-medium border transition-all duration-200",
-                "bg-card/90 backdrop-blur-sm border-border text-foreground hover:bg-secondary",
-                "animate-in fade-in slide-in-from-bottom-1 duration-200 shadow-md"
-              )}
-            >
-              Zoom zurücksetzen
-            </button>
-          )}
+        {/* Reset Zoom – floats over map, bottom-right; only visible when zoomed in */}
+        {zoom > 1 && (
+          <button
+            onClick={resetZoom}
+            className={cn(
+              "absolute bottom-4 right-4 md:bottom-5 md:right-5",
+              "px-3 py-1.5 rounded-lg text-xs font-medium border transition-all duration-200",
+              "bg-card/90 backdrop-blur-sm border-border text-foreground hover:bg-secondary",
+              "animate-in fade-in slide-in-from-bottom-1 duration-200 shadow-md"
+            )}
+          >
+            Zoom zurücksetzen
+          </button>
+        )}
 
-        {/* Floor selector – floats over map, bottom-left */}
-        <div
-          className="absolute bottom-4 left-4 md:bottom-5 md:left-5 flex gap-1 bg-card/90 backdrop-blur-sm border border-border rounded-lg p-1 shadow-md"
-          role="group"
-          aria-label="Etagenauswahl"
-        >
-          
-          {/* Hint text  */}
-          <p className="text-center text-sm text-muted-foreground mt-4">
-            Klicke auf ein Gebäude oder einen Bereich, um mehr zu erfahren.
-          </p>
-        </div>
+      
+        
+        {/* Hint text  */}
+        <p className="text-center text-sm text-muted-foreground mt-4">
+          Klicke auf ein Gebäude oder einen Bereich, um mehr zu erfahren.
+        </p>
+        
       </div>
 
 
