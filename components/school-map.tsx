@@ -237,6 +237,7 @@ export function SchoolMap() {
 
   const handleTouchStart = useCallback((e: TouchEvent) => {
     if (e.touches.length === 2) {
+      e.preventDefault() // prevent browser native pinch-zoom
       isPinchingRef.current = true
       isTouchPanningRef.current = false
       lastPinchDistRef.current = getTouchDist(e.touches)
@@ -284,19 +285,23 @@ export function SchoolMap() {
     if (e.touches.length === 0) isTouchPanningRef.current = false
   }, [])
 
+  const cardRef = useRef<HTMLDivElement>(null)
+
   // Attach wheel and touch listeners (passive: false to allow preventDefault)
+  // Use the full card element for touch so the entire visible area detects pinch/pan
   useEffect(() => {
-    const el = containerRef.current
-    if (!el) return
-    el.addEventListener("wheel", handleWheel, { passive: false })
-    el.addEventListener("touchstart", handleTouchStart, { passive: true })
-    el.addEventListener("touchmove", handleTouchMove, { passive: false })
-    el.addEventListener("touchend", handleTouchEnd, { passive: true })
+    const wheelEl = containerRef.current
+    const touchEl = cardRef.current
+    if (!wheelEl || !touchEl) return
+    wheelEl.addEventListener("wheel", handleWheel, { passive: false })
+    touchEl.addEventListener("touchstart", handleTouchStart, { passive: false })
+    touchEl.addEventListener("touchmove", handleTouchMove, { passive: false })
+    touchEl.addEventListener("touchend", handleTouchEnd, { passive: true })
     return () => {
-      el.removeEventListener("wheel", handleWheel)
-      el.removeEventListener("touchstart", handleTouchStart)
-      el.removeEventListener("touchmove", handleTouchMove)
-      el.removeEventListener("touchend", handleTouchEnd)
+      wheelEl.removeEventListener("wheel", handleWheel)
+      touchEl.removeEventListener("touchstart", handleTouchStart)
+      touchEl.removeEventListener("touchmove", handleTouchMove)
+      touchEl.removeEventListener("touchend", handleTouchEnd)
     }
   }, [handleWheel, handleTouchStart, handleTouchMove, handleTouchEnd])
 
@@ -331,7 +336,7 @@ export function SchoolMap() {
   return (
     <div className="flex flex-col gap-8">
       {/* Floor plan */}
-      <div className="bg-card border border-border rounded-xl p-1 md:p-6 relative">
+      <div ref={cardRef} className="bg-card border border-border rounded-xl p-1 md:p-6 relative">
         {/* Zoom + pan container */}
         <div
           ref={containerRef}
@@ -510,49 +515,53 @@ export function SchoolMap() {
           </div>
         </div>
 
-        {/* Hint text – mb-14 reserves space so it never overlaps the corner controls */}
-        <p className="text-center text-sm text-muted-foreground mt-4 mb-14">
-          Klicke auf ein Gebäude oder einen Bereich, um mehr zu erfahren.
-        </p>
-
-        {/* Bottom-left: Floor selector */}
-        <div
-          className="absolute bottom-4 left-4 md:bottom-6 md:left-6 flex gap-1 bg-card border border-border rounded-lg p-1 shadow-sm"
-          role="group"
-          aria-label="Etagenauswahl"
-        >
-          {([1, 2, 3] as Floor[]).map((f) => (
-            <button
-              key={f}
-              onClick={() => handleFloorChange(f)}
-              className={cn(
-                "w-9 h-9 rounded-md text-sm font-medium transition-all duration-200",
-                floor === f
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-              )}
-              aria-pressed={floor === f}
-              aria-label={floorLabels[f]}
-            >
-              {f}
-            </button>
-          ))}
-        </div>
-
-        {/* Bottom-right: Reset Zoom button – only visible when zoomed in */}
-        {zoom > 1 && (
-          <button
-            onClick={resetZoom}
-            className={cn(
-              "absolute bottom-4 right-4 md:bottom-6 md:right-6",
-              "px-3 py-1.5 rounded-lg text-xs font-medium border transition-all duration-200",
-              "bg-card border-border text-foreground hover:bg-secondary hover:text-foreground",
-              "animate-in fade-in slide-in-from-bottom-1 duration-200"
-            )}
+        {/* Bottom bar: floor selector | hint text | reset zoom — all in one flex row, no overlap possible */}
+        <div className="flex items-center justify-between gap-2 mt-4">
+          {/* Floor selector – left */}
+          <div
+            className="flex gap-1 bg-card border border-border rounded-lg p-1 shadow-sm shrink-0"
+            role="group"
+            aria-label="Etagenauswahl"
           >
-            Zoom zurücksetzen
-          </button>
-        )}
+            {([1, 2, 3] as Floor[]).map((f) => (
+              <button
+                key={f}
+                onClick={() => handleFloorChange(f)}
+                className={cn(
+                  "w-9 h-9 rounded-md text-sm font-medium transition-all duration-200",
+                  floor === f
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                )}
+                aria-pressed={floor === f}
+                aria-label={floorLabels[f]}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
+
+          {/* Hint text – center, collapses gracefully on small screens */}
+          <p className="text-center text-sm text-muted-foreground leading-snug min-w-0">
+            Klicke auf ein Gebäude oder einen Bereich, um mehr zu erfahren.
+          </p>
+
+          {/* Reset Zoom – right, hidden when not zoomed in; placeholder keeps layout stable */}
+          <div className="shrink-0 w-[7.5rem] flex justify-end">
+            {zoom > 1 && (
+              <button
+                onClick={resetZoom}
+                className={cn(
+                  "px-3 py-1.5 rounded-lg text-xs font-medium border transition-all duration-200",
+                  "bg-card border-border text-foreground hover:bg-secondary hover:text-foreground",
+                  "animate-in fade-in slide-in-from-bottom-1 duration-200"
+                )}
+              >
+                Zoom zurücksetzen
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Building details */}
