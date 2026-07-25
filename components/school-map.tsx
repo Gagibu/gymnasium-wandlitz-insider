@@ -237,6 +237,7 @@ export function SchoolMap() {
 
   const handleTouchStart = useCallback((e: TouchEvent) => {
     if (e.touches.length === 2) {
+      e.preventDefault() // prevent browser native pinch-zoom
       isPinchingRef.current = true
       isTouchPanningRef.current = false
       lastPinchDistRef.current = getTouchDist(e.touches)
@@ -284,19 +285,23 @@ export function SchoolMap() {
     if (e.touches.length === 0) isTouchPanningRef.current = false
   }, [])
 
+  const cardRef = useRef<HTMLDivElement>(null)
+
   // Attach wheel and touch listeners (passive: false to allow preventDefault)
+  // Use the full card element for touch so the entire visible area detects pinch/pan
   useEffect(() => {
-    const el = containerRef.current
-    if (!el) return
-    el.addEventListener("wheel", handleWheel, { passive: false })
-    el.addEventListener("touchstart", handleTouchStart, { passive: true })
-    el.addEventListener("touchmove", handleTouchMove, { passive: false })
-    el.addEventListener("touchend", handleTouchEnd, { passive: true })
+    const wheelEl = containerRef.current
+    const touchEl = cardRef.current
+    if (!wheelEl || !touchEl) return
+    wheelEl.addEventListener("wheel", handleWheel, { passive: false })
+    touchEl.addEventListener("touchstart", handleTouchStart, { passive: false })
+    touchEl.addEventListener("touchmove", handleTouchMove, { passive: false })
+    touchEl.addEventListener("touchend", handleTouchEnd, { passive: true })
     return () => {
-      el.removeEventListener("wheel", handleWheel)
-      el.removeEventListener("touchstart", handleTouchStart)
-      el.removeEventListener("touchmove", handleTouchMove)
-      el.removeEventListener("touchend", handleTouchEnd)
+      wheelEl.removeEventListener("wheel", handleWheel)
+      touchEl.removeEventListener("touchstart", handleTouchStart)
+      touchEl.removeEventListener("touchmove", handleTouchMove)
+      touchEl.removeEventListener("touchend", handleTouchEnd)
     }
   }, [handleWheel, handleTouchStart, handleTouchMove, handleTouchEnd])
 
@@ -331,7 +336,7 @@ export function SchoolMap() {
   return (
     <div className="flex flex-col gap-8">
       {/* Floor plan */}
-      <div className="bg-card border border-border rounded-xl p-1 md:p-6 relative">
+      <div ref={cardRef} className="bg-card border border-border rounded-xl p-1 md:p-6 relative">
         {/* Zoom + pan container */}
         <div
           ref={containerRef}
@@ -510,9 +515,9 @@ export function SchoolMap() {
           </div>
         </div>
 
-        {/* Bottom-left: Floor selector */}
+        {/* Floor selector – floats over map, bottom-left */}
         <div
-          className="absolute bottom-4 left-4 md:bottom-6 md:left-6 flex gap-1 bg-card border border-border rounded-lg p-1 shadow-sm"
+          className="absolute bottom-4 left-4 md:bottom-5 md:left-5 flex gap-1 bg-card/90 backdrop-blur-sm border border-border rounded-lg p-1 shadow-md"
           role="group"
           aria-label="Etagenauswahl"
         >
@@ -534,28 +539,26 @@ export function SchoolMap() {
           ))}
         </div>
 
-        {/* Bottom-right: Reset Zoom button – only visible when zoomed in */}
+        {/* Reset Zoom – floats over map, bottom-right; only visible when zoomed in */}
         {zoom > 1 && (
           <button
             onClick={resetZoom}
             className={cn(
-              "absolute bottom-4 right-4 md:bottom-6 md:right-6",
+              "absolute bottom-4 right-4 md:bottom-5 md:right-5",
               "px-3 py-1.5 rounded-lg text-xs font-medium border transition-all duration-200",
-              "bg-card border-border text-foreground hover:bg-secondary hover:text-foreground",
-              "animate-in fade-in slide-in-from-bottom-1 duration-200"
+              "bg-card/90 backdrop-blur-sm border-border text-foreground hover:bg-secondary",
+              "animate-in fade-in slide-in-from-bottom-1 duration-200 shadow-md"
             )}
           >
             Zoom zurücksetzen
           </button>
         )}
-
-        {/* Hint text */}
-        <p className="text-center text-sm text-muted-foreground mt-4 mb-14">
-          Klicke auf ein Gebäude oder einen Bereich, um mehr zu erfahren.
-        </p>
-
-        
       </div>
+
+      {/* Hint text – below the map card, never overlaps anything */}
+      <p className="text-center text-sm text-muted-foreground -mt-4">
+        Klicke auf ein Gebäude oder einen Bereich, um mehr zu erfahren.
+      </p>
 
       {/* Building details */}
       <div aria-live="polite">
