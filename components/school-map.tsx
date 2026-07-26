@@ -625,11 +625,9 @@ export function SchoolMap() {
         </div>
 
         {/* Hint text */}
-        <div className="mt-4 rounded-xl border border-border bg-card/90 backdrop-blur-sm px-4 py-3">
-          <p className="text-center text-sm md:text-base leading-relaxed text-muted-foreground text-balance">
-            Klicke auf ein Gebäude oder einen Bereich, um mehr zu erfahren.
-          </p>
-        </div>
+        <p className="text-center text-sm md:text-base leading-relaxed text-muted-foreground text-balance">
+          Klicke auf ein Gebäude oder einen Bereich, um mehr zu erfahren.
+        </p>
       </div>
 
       {/* Building details */}
