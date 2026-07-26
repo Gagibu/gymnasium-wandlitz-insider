@@ -586,7 +586,7 @@ export function SchoolMap() {
           </div>
 
           <div
-            className="absolute bottom-10 left-10 md:bottom-5 md:left-5 z-20 flex gap-1 bg-card/90 backdrop-blur-sm border border-border rounded-lg p-1 shadow-md"
+            className="absolute bottom-1 left-1 md:bottom-5 md:left-5 z-20 flex gap-1 bg-card/90 backdrop-blur-sm border border-border rounded-lg p-1 shadow-md"
             role="group"
             aria-label="Etagenauswahl"
           >
@@ -613,7 +613,7 @@ export function SchoolMap() {
             <button
               onClick={resetZoom}
               className={cn(
-                "absolute bottom-10 right-10 md:bottom-5 md:right-5 z-20",
+                "absolute bottom-1 right-1 md:bottom-5 md:right-5 z-20",
                 "px-3 py-1.5 rounded-lg text-xs font-medium border transition-all duration-200",
                 "bg-card/90 backdrop-blur-sm border-border text-foreground hover:bg-secondary",
                 "animate-in fade-in slide-in-from-bottom-1 duration-200 shadow-md"
