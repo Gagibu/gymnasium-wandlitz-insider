@@ -107,7 +107,13 @@ const floorBuildings: Record<Floor, BuildingId[]> = {
 }
 
 const MIN_ZOOM = 1
-const MAX_ZOOM = 4
+const MAX_ZOOM = 5
+
+const SVG_VIEWBOX_WIDTH = 247.73793
+const SVG_VIEWBOX_HEIGHT = 146.58737
+const DEFAULT_VIEWPORT_HEIGHT = 240
+const NORMAL_STROKE_WIDTH = 0.85
+const OUTLINE_STROKE_WIDTH = 0.65
 
 export function SchoolMap() {
   const [selected, setSelected] = useState<BuildingId | null>(null)
@@ -118,6 +124,7 @@ export function SchoolMap() {
   const [pan, setPan] = useState({ x: 0, y: 0 })
 
   const containerRef = useRef<HTMLDivElement>(null)
+  const cardRef = useRef<HTMLDivElement>(null)
   const isPinchingRef = useRef(false)
   const lastPinchDistRef = useRef(0)
   const lastPinchMidRef = useRef({ x: 0, y: 0 })
@@ -126,6 +133,40 @@ export function SchoolMap() {
   // Single-finger touch pan
   const isTouchPanningRef = useRef(false)
   const lastTouchPosRef = useRef({ x: 0, y: 0 })
+  const zoomRef = useRef(1)
+
+  const [viewportWidth, setViewportWidth] = useState(0)
+
+  useEffect(() => {
+    zoomRef.current = zoom
+  }, [zoom])
+
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el || typeof ResizeObserver === "undefined") return
+
+    const updateWidth = () => {
+      const next = el.getBoundingClientRect().width
+      setViewportWidth((prev) => (Math.abs(prev - next) > 0.5 ? next : prev))
+    }
+
+    updateWidth()
+
+    const observer = new ResizeObserver(() => {
+      updateWidth()
+    })
+
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
+  const baseViewportHeight =
+    viewportWidth > 0
+      ? (viewportWidth * SVG_VIEWBOX_HEIGHT) / SVG_VIEWBOX_WIDTH
+      : DEFAULT_VIEWPORT_HEIGHT
+
+  const viewportZoomFactor = Math.min(zoom, 2)
+  const mapViewportHeight = baseViewportHeight * viewportZoomFactor
 
   // Auto-clear selection when building becomes unavailable on floor switch
   const handleFloorChange = (newFloor: Floor) => {
@@ -158,29 +199,34 @@ export function SchoolMap() {
     (newZoom: number, clientX: number, clientY: number) => {
       const container = containerRef.current
       if (!container) return
+
       const rect = container.getBoundingClientRect()
       const cw = rect.width
       const ch = rect.height
+      const prevZoom = zoomRef.current
+      const clamped = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, newZoom))
+
       // Point relative to container center
       const px = clientX - rect.left - cw / 2
       const py = clientY - rect.top - ch / 2
 
-      setZoom((prevZoom) => {
-        const clamped = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, newZoom))
-        setPan((prevPan) => {
-          // Adjust pan so the point under cursor stays fixed
-          const scale = clamped / prevZoom
-          const newPanX = scale * (prevPan.x - px) + px
-          const newPanY = scale * (prevPan.y - py) + py
-          return clampPan(newPanX, newPanY, clamped, cw, ch)
-        })
-        return clamped
+      const scale = clamped / prevZoom
+
+      setPan((prevPan) => {
+        // Adjust pan so the point under cursor stays fixed
+        const newPanX = scale * (prevPan.x - px) + px
+        const newPanY = scale * (prevPan.y - py) + py
+        return clampPan(newPanX, newPanY, clamped, cw, ch)
       })
+
+      zoomRef.current = clamped
+      setZoom(clamped)
     },
     [clampPan]
   )
 
   const resetZoom = () => {
+    zoomRef.current = 1
     setZoom(1)
     setPan({ x: 0, y: 0 })
   }
@@ -189,22 +235,22 @@ export function SchoolMap() {
   const handleWheel = useCallback(
     (e: WheelEvent) => {
       e.preventDefault()
-      const delta = -e.deltaY * 0.001
-      setZoom((prev) => {
-        const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, prev + delta * prev))
-        zoomTowards(newZoom, e.clientX, e.clientY)
-        return prev // actual update happens inside zoomTowards
-      })
+      const delta = -e.deltaY * 0.0015
+      const targetZoom = zoomRef.current + delta * zoomRef.current
+      zoomTowards(targetZoom, e.clientX, e.clientY)
     },
     [zoomTowards]
   )
 
   // Mouse drag pan
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    if (zoom <= 1) return
-    isDraggingRef.current = true
-    lastMousePosRef.current = { x: e.clientX, y: e.clientY }
-  }, [zoom])
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent) => {
+      if (zoomRef.current <= 1) return
+      isDraggingRef.current = true
+      lastMousePosRef.current = { x: e.clientX, y: e.clientY }
+    },
+    []
+  )
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent) => {
@@ -215,9 +261,9 @@ export function SchoolMap() {
       const container = containerRef.current
       if (!container) return
       const { width: cw, height: ch } = container.getBoundingClientRect()
-      setPan((prev) => clampPan(prev.x + dx, prev.y + dy, zoom, cw, ch))
+      setPan((prev) => clampPan(prev.x + dx, prev.y + dy, zoomRef.current, cw, ch))
     },
-    [zoom, clampPan]
+    [clampPan]
   )
 
   const handleMouseUp = useCallback(() => {
@@ -235,21 +281,29 @@ export function SchoolMap() {
     y: (t[0].clientY + t[1].clientY) / 2,
   })
 
-  const handleTouchStart = useCallback((e: TouchEvent) => {
-    if (e.touches.length === 2) {
-      e.preventDefault() // prevent browser native pinch-zoom
-      isPinchingRef.current = true
-      isTouchPanningRef.current = false
-      lastPinchDistRef.current = getTouchDist(e.touches)
-      lastPinchMidRef.current = getTouchMid(e.touches)
-    } else if (e.touches.length === 1) {
-      // Single-finger pan only when zoomed in
-      if (zoom > 1) {
+  const isEventInsideCard = (target: EventTarget | null) => {
+    if (!(target instanceof Node)) return false
+    return Boolean(cardRef.current?.contains(target))
+  }
+
+  const handleTouchStart = useCallback(
+    (e: TouchEvent) => {
+      if (e.touches.length === 2) {
+        e.preventDefault()
+        isPinchingRef.current = true
+        isTouchPanningRef.current = false
+        lastPinchDistRef.current = getTouchDist(e.touches)
+        lastPinchMidRef.current = getTouchMid(e.touches)
+        return
+      }
+
+      if (e.touches.length === 1 && zoomRef.current > 1 && isEventInsideCard(e.target)) {
         isTouchPanningRef.current = true
         lastTouchPosRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
       }
-    }
-  }, [zoom])
+    },
+    []
+  )
 
   const handleTouchMove = useCallback(
     (e: TouchEvent) => {
@@ -257,12 +311,9 @@ export function SchoolMap() {
         e.preventDefault()
         const dist = getTouchDist(e.touches)
         const mid = getTouchMid(e.touches)
-        const scale = dist / lastPinchDistRef.current
-        setZoom((prev) => {
-          const newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, prev * scale))
-          zoomTowards(newZoom, mid.x, mid.y)
-          return prev
-        })
+        const scale = dist / Math.max(lastPinchDistRef.current, 1)
+        const targetZoom = zoomRef.current * scale
+        zoomTowards(targetZoom, mid.x, mid.y)
         lastPinchDistRef.current = dist
         lastPinchMidRef.current = mid
       } else if (e.touches.length === 1 && isTouchPanningRef.current) {
@@ -274,10 +325,10 @@ export function SchoolMap() {
         const container = containerRef.current
         if (!container) return
         const { width: cw, height: ch } = container.getBoundingClientRect()
-        setPan((prev) => clampPan(prev.x + dx, prev.y + dy, zoom, cw, ch))
+        setPan((prev) => clampPan(prev.x + dx, prev.y + dy, zoomRef.current, cw, ch))
       }
     },
-    [zoomTowards, clampPan, zoom]
+    [zoomTowards, clampPan]
   )
 
   const handleTouchEnd = useCallback((e: TouchEvent) => {
@@ -285,23 +336,25 @@ export function SchoolMap() {
     if (e.touches.length === 0) isTouchPanningRef.current = false
   }, [])
 
-  const cardRef = useRef<HTMLDivElement>(null)
-
-  // Attach wheel and touch listeners (passive: false to allow preventDefault)
-  // Use the full card element for touch so the entire visible area detects pinch/pan
+  // Attach wheel to map viewport and touch listeners to the entire page
   useEffect(() => {
     const wheelEl = containerRef.current
-    const touchEl = cardRef.current
-    if (!wheelEl || !touchEl) return
-    wheelEl.addEventListener("wheel", handleWheel, { passive: false })
-    touchEl.addEventListener("touchstart", handleTouchStart, { passive: false })
-    touchEl.addEventListener("touchmove", handleTouchMove, { passive: false })
-    touchEl.addEventListener("touchend", handleTouchEnd, { passive: true })
+    if (wheelEl) {
+      wheelEl.addEventListener("wheel", handleWheel, { passive: false })
+    }
+    window.addEventListener("touchstart", handleTouchStart, { passive: false })
+    window.addEventListener("touchmove", handleTouchMove, { passive: false })
+    window.addEventListener("touchend", handleTouchEnd, { passive: true })
+    window.addEventListener("touchcancel", handleTouchEnd, { passive: true })
+
     return () => {
-      wheelEl.removeEventListener("wheel", handleWheel)
-      touchEl.removeEventListener("touchstart", handleTouchStart)
-      touchEl.removeEventListener("touchmove", handleTouchMove)
-      touchEl.removeEventListener("touchend", handleTouchEnd)
+      if (wheelEl) {
+        wheelEl.removeEventListener("wheel", handleWheel)
+      }
+      window.removeEventListener("touchstart", handleTouchStart)
+      window.removeEventListener("touchmove", handleTouchMove)
+      window.removeEventListener("touchend", handleTouchEnd)
+      window.removeEventListener("touchcancel", handleTouchEnd)
     }
   }, [handleWheel, handleTouchStart, handleTouchMove, handleTouchEnd])
 
@@ -322,8 +375,8 @@ export function SchoolMap() {
       selected === id
         ? "fill-primary/30 stroke-primary"
         : invisible
-        ? "fill-transparent stroke-transparent hover:fill-primary/10 hover:stroke-primary"
-        : "fill-transparent stroke-foreground hover:fill-primary/10 hover:stroke-primary"
+          ? "fill-transparent stroke-transparent hover:fill-primary/10 hover:stroke-primary"
+          : "fill-transparent stroke-foreground hover:fill-primary/10 hover:stroke-primary"
     )
   }
 
@@ -333,236 +386,251 @@ export function SchoolMap() {
     3: "Etage 3",
   }
 
+  const sharedStrokeStyle = {
+    strokeWidth: NORMAL_STROKE_WIDTH,
+  }
+
+  const outlineStrokeStyle = {
+    strokeWidth: OUTLINE_STROKE_WIDTH,
+    fill: "none",
+    stroke: "currentColor",
+  }
+
   return (
     <div className="flex flex-col gap-8">
       {/* Floor plan */}
       <div ref={cardRef} className="bg-card border border-border rounded-xl p-1 md:p-6 relative">
-        {/* Zoom + pan container */}
-        <div
-          ref={containerRef}
-          className={cn(
-            "overflow-hidden select-none rounded-lg",
-            zoom > 1 ? "cursor-grab active:cursor-grabbing" : "cursor-default"
-          )}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
-        >
+        <div className="relative w-full">
+          {/* Zoom + pan container */}
           <div
-            style={{
-              transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
-              transformOrigin: "center center",
-              transition: isDraggingRef.current ? "none" : "transform 0.05s linear",
-              willChange: "transform",
-            }}
-          >
-            <svg
-              viewBox="0 0 239.73793 138.58737"
-              className="w-full h-auto"
-              role="group"
-              aria-label="Interaktiver Schulplan mit anklickbaren Gebäuden und Bereichen"
-            >
-              <path
-                id="building1"
-                role={isOnFloor("building1") ? "button" : undefined}
-                tabIndex={isOnFloor("building1") ? 0 : -1}
-                aria-label="Gebäude A – Hauptgebäude"
-                aria-disabled={!isOnFloor("building1")}
-                onClick={() => handleSelect("building1")}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault()
-                    handleSelect("building1")
-                  }
-                }}
-                className={buildingClass("building1")}
-                style={{ strokeWidth: 1.2 }}
-                d="M 46.616900,36.349588 42.957494,39.258407 30.851822,24.028987 0.185879,48.404949 33.664183,90.521989 64.330135,66.146029 52.010628,50.647609 l 3.659392,-2.90881 z"
-              />
-              <rect
-                id="building2"
-                role={isOnFloor("building2") ? "button" : undefined}
-                tabIndex={isOnFloor("building2") ? 0 : -1}
-                aria-label="Gebäude B – Naturwissenschaften"
-                aria-disabled={!isOnFloor("building2")}
-                onClick={() => handleSelect("building2")}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault()
-                    handleSelect("building2")
-                  }
-                }}
-                className={buildingClass("building2")}
-                style={{ strokeWidth: 1.2 }}
-                width="41.79221"
-                height="23.180557"
-                x="146.257235"
-                y="-32.859800"
-                transform="rotate(50.254519)"
-              />
-              <path
-                style={{
-                  strokeWidth: 1.2,
-                  fill: "none",
-                  stroke: "currentColor",
-                }}
-                d="m 218.368035,40.095009 -3.05336,2.39381 -12.58914,-15.623807 -2.88773,2.327007 -3.60797,-4.477221 -39.39364,31.742681 -1.93484,-2.49389 -1.88945,1.46622 -10.42507,-13.436369 1.9934,-1.5464 -1.30539,-1.682627 14.00585,-10.86626 -10.64526,-13.72143 -15.92326,12.353753 -4.38255,-5.649471 1.79551,-1.392565 9.6e-4,0.0012 12.19171,-9.459754 -7.58435,-9.775326 -12.191628,9.459025 4.724204,6.08947 -1.795596,1.393293 -0.0016,-0.002 -2.779521,2.156805 7.243011,9.335735 -0.0748,0.05794 -9.952509,-12.82779 2.002742,-1.553722 L 110.816421,2.646473 87.906699,20.420446 83.112434,14.240784 63.382293,29.548247 77.269042,47.447819 96.999190,32.140351 l -0.0016,-0.002 17.795726,-13.807306 9.952426,12.828518 -2.239161,1.737105 -1.827892,-2.35579 -9.553045,7.411403 1.827886,2.355795 -17.164037,13.317323 10.645659,13.7211 27.338603,-21.21072 13.79965,17.78596 -5.77862,4.65584 10.08009,12.50975 2.81029,-2.26498 17.25782,21.41799 -13.3128,10.72675 9.8641,12.24178 24.84258,-20.0182 -9.86378,-12.24137 -1.58502,1.27746 -17.25822,-21.41768 40.75551,-32.839924 6.07642,7.540364 -7.02703,5.50916 11.23609,14.33183 -11.69207,9.16652 9.89253,12.61809 25.61192,-20.07964 -5.79005,-7.38532 0.0134,-0.0104 z"
-              />
-              <path
-                id="haus3"
-                role={isOnFloor("haus3") ? "button" : undefined}
-                tabIndex={isOnFloor("haus3") ? 0 : -1}
-                aria-label="Haus 3"
-                aria-disabled={!isOnFloor("haus3")}
-                onClick={() => handleSelect("haus3")}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault()
-                    handleSelect("haus3")
-                  }
-                }}
-                className={buildingClass("haus3", true)}
-                style={{ strokeWidth: 1.2 }}
-                d="m 63.382291,29.548247 19.730141,-15.307463 4.794265,6.179662 22.909723,-17.773973 9.09134,11.716843 -2.00274,1.553722 9.9525,12.827791 -3.11178,2.414733 -9.95243,-12.828517 -37.52427,29.116775 z"
-              />
-              <path
-                id="essenraum"
-                role={isOnFloor("essenraum") ? "button" : undefined}
-                tabIndex={isOnFloor("essenraum") ? 0 : -1}
-                aria-label="Essenraum"
-                aria-disabled={!isOnFloor("essenraum")}
-                onClick={() => handleSelect("essenraum")}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault()
-                    handleSelect("essenraum")
-                  }
-                }}
-                className={buildingClass("essenraum", true)}
-                style={{ strokeWidth: 1.2 }}
-                d="m 130.712170,26.530475 -4.38255,-5.64947 13.98818,-10.851119 -7.58435,-9.775326 -12.19162,9.4590248 4.7242,6.0894702 -4.57672,3.548098 7.24301,9.335735 z"
-              />
-              <path
-                id="haus1"
-                role={isOnFloor("haus1") ? "button" : undefined}
-                tabIndex={isOnFloor("haus1") ? 0 : -1}
-                aria-label="Haus 1"
-                aria-disabled={!isOnFloor("haus1")}
-                onClick={() => handleSelect("haus1")}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault()
-                    handleSelect("haus1")
-                  }
-                }}
-                className={buildingClass("haus1", true)}
-                style={{ strokeWidth: 1.2 }}
-                d="m 143.274840,38.764412 14.00585,-10.86626 -10.64526,-13.721429 -24.12885,18.719945 -1.82789,-2.355789 -9.55305,7.411402 1.82789,2.355794 -17.164038,13.317323 10.645658,13.721101 27.3386,-21.210722 z"
-              />
-              <path
-                id="foyer"
-                role={isOnFloor("foyer") ? "button" : undefined}
-                tabIndex={isOnFloor("foyer") ? 0 : -1}
-                aria-label="Foyer"
-                aria-disabled={!isOnFloor("foyer")}
-                onClick={() => handleSelect("foyer")}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault()
-                    handleSelect("foyer")
-                  }
-                }}
-                className={buildingClass("foyer", true)}
-                style={{ strokeWidth: 1.2 }}
-                d="m 133.773750,46.135777 13.79965,17.785961 9.26279,-7.464261 -1.93484,-2.493888 -1.88945,1.46622 -10.42507,-13.43637 1.9934,-1.546399 -1.30539,-1.682628 z"
-              />
-              <path
-                id="haus2"
-                role={isOnFloor("haus2") ? "button" : undefined}
-                tabIndex={isOnFloor("haus2") ? 0 : -1}
-                aria-label="Haus 2"
-                aria-disabled={!isOnFloor("haus2")}
-                onClick={() => handleSelect("haus2")}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault()
-                    handleSelect("haus2")
-                  }
-                }}
-                className={buildingClass("haus2", true)}
-                style={{ strokeWidth: 1.2 }}
-                d="m 151.874870,81.087328 2.81029,-2.264979 17.25782,21.417992 -13.3128,10.72675 9.8641,12.24178 24.84258,-20.0182 -9.86378,-12.241373 -1.58502,1.277459 -17.25822,-21.417679 41.68043,-33.58521 -10.08044,-12.50907 -54.43505,43.862781 z"
-              />
-              <path
-                id="haus5"
-                role={isOnFloor("haus5") ? "button" : undefined}
-                tabIndex={isOnFloor("haus5") ? 0 : -1}
-                aria-label="Haus 5"
-                aria-disabled={!isOnFloor("haus5")}
-                onClick={() => handleSelect("haus5")}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault()
-                    handleSelect("haus5")
-                  }
-                }}
-                className={buildingClass("haus5", true)}
-                style={{ strokeWidth: 1.2 }}
-                d="m 213.871290,87.135118 25.61192,-20.079639 -21.11518,-26.96047 -3.05336,2.39381 -12.58914,-15.623807 -3.812638,3.072323 12.548878,15.572184 -7.02703,5.509159 11.23609,14.331831 -11.69207,9.166519 z"
-              />
-            </svg>
-          </div>
-        </div>
-
-        <div
-          className="absolute bottom-4 left-4 md:bottom-5 md:left-5 flex gap-1 bg-card/90 backdrop-blur-sm border border-border rounded-lg p-1 shadow-md"
-          role="group"
-          aria-label="Etagenauswahl"
-        >
-
-          {([1, 2, 3] as Floor[]).map((f) => (
-            <button
-              key={f}
-              onClick={() => handleFloorChange(f)}
-              className={cn(
-                "w-9 h-9 rounded-md text-sm font-medium transition-all duration-200",
-                floor === f
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-              )}
-              aria-pressed={floor === f}
-              aria-label={floorLabels[f]}
-            >
-              {f}
-            </button>
-          ))}
-        </div>
-
-        {/* Reset Zoom – floats over map, bottom-right; only visible when zoomed in */}
-        {zoom > 1 && (
-          <button
-            onClick={resetZoom}
+            ref={containerRef}
             className={cn(
-              "absolute bottom-4 right-4 md:bottom-5 md:right-5",
-              "px-3 py-1.5 rounded-lg text-xs font-medium border transition-all duration-200",
-              "bg-card/90 backdrop-blur-sm border-border text-foreground hover:bg-secondary",
-              "animate-in fade-in slide-in-from-bottom-1 duration-200 shadow-md"
+              "overflow-hidden select-none rounded-lg touch-none",
+              zoom > 1 ? "cursor-grab active:cursor-grabbing" : "cursor-default"
             )}
+            style={{ height: mapViewportHeight }}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
           >
-            Zoom zurücksetzen
-          </button>
-        )}
+            <div
+              style={{
+                transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+                transformOrigin: "center center",
+                transition: isDraggingRef.current ? "none" : "transform 0.05s linear",
+                willChange: "transform",
+              }}
+            >
+              <svg
+                viewBox="-4 -4 247.73793 146.58737"
+                className="w-full h-auto block"
+                role="group"
+                aria-label="Interaktiver Schulplan mit anklickbaren Gebäuden und Bereichen"
+              >
+                <path
+                  id="building1"
+                  role={isOnFloor("building1") ? "button" : undefined}
+                  tabIndex={isOnFloor("building1") ? 0 : -1}
+                  aria-label="Gebäude A – Hauptgebäude"
+                  aria-disabled={!isOnFloor("building1")}
+                  onClick={() => handleSelect("building1")}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault()
+                      handleSelect("building1")
+                    }
+                  }}
+                  className={buildingClass("building1")}
+                  vectorEffect="non-scaling-stroke"
+                  style={sharedStrokeStyle}
+                  d="M 46.616900,36.349588 42.957494,39.258407 30.851822,24.028987 0.185879,48.404949 33.664183,90.521989 64.330135,66.146029 52.010628,50.647609 l 3.659392,-2.90881 z"
+                />
+                <rect
+                  id="building2"
+                  role={isOnFloor("building2") ? "button" : undefined}
+                  tabIndex={isOnFloor("building2") ? 0 : -1}
+                  aria-label="Gebäude B – Naturwissenschaften"
+                  aria-disabled={!isOnFloor("building2")}
+                  onClick={() => handleSelect("building2")}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault()
+                      handleSelect("building2")
+                    }
+                  }}
+                  className={buildingClass("building2")}
+                  vectorEffect="non-scaling-stroke"
+                  style={sharedStrokeStyle}
+                  width="41.79221"
+                  height="23.180557"
+                  x="146.257235"
+                  y="-32.859800"
+                  transform="rotate(50.254519)"
+                />
+                <path
+                  vectorEffect="non-scaling-stroke"
+                  style={outlineStrokeStyle}
+                  d="m 218.368035,40.095009 -3.05336,2.39381 -12.58914,-15.623807 -2.88773,2.327007 -3.60797,-4.477221 -39.39364,31.742681 -1.93484,-2.49389 -1.88945,1.46622 -10.42507,-13.436369 1.9934,-1.5464 -1.30539,-1.682627 14.00585,-10.86626 -10.64526,-13.72143 -15.92326,12.353753 -4.38255,-5.649471 1.79551,-1.392565 9.6e-4,0.0012 12.19171,-9.459754 -7.58435,-9.775326 -12.191628,9.459025 4.724204,6.08947 -1.795596,1.393293 -0.0016,-0.002 -2.779521,2.156805 7.243011,9.335735 -0.0748,0.05794 -9.952509,-12.82779 2.002742,-1.553722 L 110.816421,2.646473 87.906699,20.420446 83.112434,14.240784 63.382293,29.548247 77.269042,47.447819 96.999190,32.140351 l -0.0016,-0.002 17.795726,-13.807306 9.952426,12.828518 -2.239161,1.737105 -1.827892,-2.35579 -9.553045,7.411403 1.827886,2.355795 -17.164037,13.317323 10.645659,13.7211 27.338603,-21.21072 13.79965,17.78596 -5.77862,4.65584 10.08009,12.50975 2.81029,-2.26498 17.25782,21.41799 -13.3128,10.72675 9.8641,12.24178 24.84258,-20.0182 -9.86378,-12.24137 -1.58502,1.27746 -17.25822,-21.41768 40.75551,-32.839924 6.07642,7.540364 -7.02703,5.50916 11.23609,14.33183 -11.69207,9.16652 9.89253,12.61809 25.61192,-20.07964 -5.79005,-7.38532 0.0134,-0.0104 z"
+                />
+                <path
+                  id="haus3"
+                  role={isOnFloor("haus3") ? "button" : undefined}
+                  tabIndex={isOnFloor("haus3") ? 0 : -1}
+                  aria-label="Haus 3"
+                  aria-disabled={!isOnFloor("haus3")}
+                  onClick={() => handleSelect("haus3")}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault()
+                      handleSelect("haus3")
+                    }
+                  }}
+                  className={buildingClass("haus3", true)}
+                  vectorEffect="non-scaling-stroke"
+                  style={sharedStrokeStyle}
+                  d="m 63.382291,29.548247 19.730141,-15.307463 4.794265,6.179662 22.909723,-17.773973 9.09134,11.716843 -2.00274,1.553722 9.9525,12.827791 -3.11178,2.414733 -9.95243,-12.828517 -37.52427,29.116775 z"
+                />
+                <path
+                  id="essenraum"
+                  role={isOnFloor("essenraum") ? "button" : undefined}
+                  tabIndex={isOnFloor("essenraum") ? 0 : -1}
+                  aria-label="Essenraum"
+                  aria-disabled={!isOnFloor("essenraum")}
+                  onClick={() => handleSelect("essenraum")}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault()
+                      handleSelect("essenraum")
+                    }
+                  }}
+                  className={buildingClass("essenraum", true)}
+                  vectorEffect="non-scaling-stroke"
+                  style={sharedStrokeStyle}
+                  d="m 130.712170,26.530475 -4.38255,-5.64947 13.98818,-10.851119 -7.58435,-9.775326 -12.19162,9.4590248 4.7242,6.0894702 -4.57672,3.548098 7.24301,9.335735 z"
+                />
+                <path
+                  id="haus1"
+                  role={isOnFloor("haus1") ? "button" : undefined}
+                  tabIndex={isOnFloor("haus1") ? 0 : -1}
+                  aria-label="Haus 1"
+                  aria-disabled={!isOnFloor("haus1")}
+                  onClick={() => handleSelect("haus1")}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault()
+                      handleSelect("haus1")
+                    }
+                  }}
+                  className={buildingClass("haus1", true)}
+                  vectorEffect="non-scaling-stroke"
+                  style={sharedStrokeStyle}
+                  d="m 143.274840,38.764412 14.00585,-10.86626 -10.64526,-13.721429 -24.12885,18.719945 -1.82789,-2.355789 -9.55305,7.411402 1.82789,2.355794 -17.164038,13.317323 10.645658,13.721101 27.3386,-21.210722 z"
+                />
+                <path
+                  id="foyer"
+                  role={isOnFloor("foyer") ? "button" : undefined}
+                  tabIndex={isOnFloor("foyer") ? 0 : -1}
+                  aria-label="Foyer"
+                  aria-disabled={!isOnFloor("foyer")}
+                  onClick={() => handleSelect("foyer")}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault()
+                      handleSelect("foyer")
+                    }
+                  }}
+                  className={buildingClass("foyer", true)}
+                  vectorEffect="non-scaling-stroke"
+                  style={sharedStrokeStyle}
+                  d="m 133.773750,46.135777 13.79965,17.785961 9.26279,-7.464261 -1.93484,-2.493888 -1.88945,1.46622 -10.42507,-13.43637 1.9934,-1.546399 -1.30539,-1.682628 z"
+                />
+                <path
+                  id="haus2"
+                  role={isOnFloor("haus2") ? "button" : undefined}
+                  tabIndex={isOnFloor("haus2") ? 0 : -1}
+                  aria-label="Haus 2"
+                  aria-disabled={!isOnFloor("haus2")}
+                  onClick={() => handleSelect("haus2")}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault()
+                      handleSelect("haus2")
+                    }
+                  }}
+                  className={buildingClass("haus2", true)}
+                  vectorEffect="non-scaling-stroke"
+                  style={sharedStrokeStyle}
+                  d="m 151.874870,81.087328 2.81029,-2.264979 17.25782,21.417992 -13.3128,10.72675 9.8641,12.24178 24.84258,-20.0182 -9.86378,-12.241373 -1.58502,1.277459 -17.25822,-21.417679 41.68043,-33.58521 -10.08044,-12.50907 -54.43505,43.862781 z"
+                />
+                <path
+                  id="haus5"
+                  role={isOnFloor("haus5") ? "button" : undefined}
+                  tabIndex={isOnFloor("haus5") ? 0 : -1}
+                  aria-label="Haus 5"
+                  aria-disabled={!isOnFloor("haus5")}
+                  onClick={() => handleSelect("haus5")}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault()
+                      handleSelect("haus5")
+                    }
+                  }}
+                  className={buildingClass("haus5", true)}
+                  vectorEffect="non-scaling-stroke"
+                  style={sharedStrokeStyle}
+                  d="m 213.871290,87.135118 25.61192,-20.079639 -21.11518,-26.96047 -3.05336,2.39381 -12.58914,-15.623807 -3.812638,3.072323 12.548878,15.572184 -7.02703,5.509159 11.23609,14.331831 -11.69207,9.166519 z"
+                />
+              </svg>
+            </div>
+          </div>
 
-      
-        
-        {/* Hint text  */}
-        <p className="text-center text-sm text-muted-foreground mt-4">
-          Klicke auf ein Gebäude oder einen Bereich, um mehr zu erfahren.
-        </p>
-        
+          <div
+            className="absolute bottom-4 left-4 md:bottom-5 md:left-5 z-20 flex gap-1 bg-card/90 backdrop-blur-sm border border-border rounded-lg p-1 shadow-md"
+            role="group"
+            aria-label="Etagenauswahl"
+          >
+            {([1, 2, 3] as Floor[]).map((f) => (
+              <button
+                key={f}
+                onClick={() => handleFloorChange(f)}
+                className={cn(
+                  "w-9 h-9 rounded-md text-sm font-medium transition-all duration-200",
+                  floor === f
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                )}
+                aria-pressed={floor === f}
+                aria-label={floorLabels[f]}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
+
+          {/* Reset Zoom – floats over map, bottom-right; only visible when zoomed in */}
+          {zoom > 1 && (
+            <button
+              onClick={resetZoom}
+              className={cn(
+                "absolute bottom-4 right-4 md:bottom-5 md:right-5 z-20",
+                "px-3 py-1.5 rounded-lg text-xs font-medium border transition-all duration-200",
+                "bg-card/90 backdrop-blur-sm border-border text-foreground hover:bg-secondary",
+                "animate-in fade-in slide-in-from-bottom-1 duration-200 shadow-md"
+              )}
+            >
+              Zoom zurücksetzen
+            </button>
+          )}
+        </div>
+
+        {/* Hint text */}
+        <div className="mt-4 rounded-xl border border-border bg-card/90 backdrop-blur-sm px-4 py-3">
+          <p className="text-center text-sm md:text-base leading-relaxed text-muted-foreground text-balance">
+            Klicke auf ein Gebäude oder einen Bereich, um mehr zu erfahren.
+          </p>
+        </div>
       </div>
-
 
       {/* Building details */}
       <div aria-live="polite">
