@@ -112,8 +112,17 @@ const MAX_ZOOM = 5
 const SVG_VIEWBOX_WIDTH = 247.73793
 const SVG_VIEWBOX_HEIGHT = 146.58737
 const DEFAULT_VIEWPORT_HEIGHT = 240
-const NORMAL_STROKE_WIDTH = 0.85
-const OUTLINE_STROKE_WIDTH = 0.65
+const STROKE_WIDTH = 1.2
+
+const sharedStrokeStyle = {
+    strokeWidth: STROKE_WIDTH / zoom,
+}
+
+const outlineStrokeStyle = {
+    strokeWidth: STROKE_WIDTH / zoom,
+    fill: "none",
+    stroke: "currentColor",
+}
 
 export function SchoolMap() {
   const [selected, setSelected] = useState<BuildingId | null>(null)
@@ -363,20 +372,34 @@ export function SchoolMap() {
   const buildingClass = (id: BuildingId, invisible = false) => {
     const onFloor = isOnFloor(id)
 
+    // 4. Fall
     if (!onFloor) {
       return cn(
         "transition-all duration-200 outline-none",
-        "fill-muted/40 stroke-muted-foreground/30 opacity-40 cursor-default pointer-events-none"
+        "fill-transparent stroke-muted-foreground/50 cursor-default pointer-events-none"
       )
     }
 
+    // 1. Fall
+    if (selected === id) {
+      return cn(
+        "cursor-pointer transition-all duration-200 outline-none",
+        "fill-primary/30 stroke-primary"
+      )
+    }
+
+    // 2. Fall
+    if (invisible) {
+      return cn(
+        "cursor-pointer transition-all duration-200 outline-none",
+        "fill-transparent stroke-transparent hover:fill-primary/10 hover:stroke-primary"
+      )
+    }
+
+    // 3. Fall
     return cn(
       "cursor-pointer transition-all duration-200 outline-none",
-      selected === id
-        ? "fill-primary/30 stroke-primary"
-        : invisible
-          ? "fill-transparent stroke-transparent hover:fill-primary/10 hover:stroke-primary"
-          : "fill-transparent stroke-foreground hover:fill-primary/10 hover:stroke-primary"
+      "fill-transparent stroke-foreground hover:fill-primary/10 hover:stroke-primary"
     )
   }
 
