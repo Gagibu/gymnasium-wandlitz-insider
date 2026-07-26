@@ -112,17 +112,7 @@ const MAX_ZOOM = 5
 const SVG_VIEWBOX_WIDTH = 247.73793
 const SVG_VIEWBOX_HEIGHT = 146.58737
 const DEFAULT_VIEWPORT_HEIGHT = 240
-const STROKE_WIDTH = 1.2
 
-const sharedStrokeStyle = {
-    strokeWidth: STROKE_WIDTH / zoom,
-}
-
-const outlineStrokeStyle = {
-    strokeWidth: STROKE_WIDTH / zoom,
-    fill: "none",
-    stroke: "currentColor",
-}
 
 export function SchoolMap() {
   const [selected, setSelected] = useState<BuildingId | null>(null)
@@ -409,12 +399,14 @@ export function SchoolMap() {
     3: "Etage 3",
   }
 
+  const STROKE_WIDTH = 1.2
+
   const sharedStrokeStyle = {
-    strokeWidth: NORMAL_STROKE_WIDTH,
+    strokeWidth: STROKE_WIDTH / zoom,
   }
 
   const outlineStrokeStyle = {
-    strokeWidth: OUTLINE_STROKE_WIDTH,
+    strokeWidth: STROKE_WIDTH / zoom,
     fill: "none",
     stroke: "currentColor",
   }
