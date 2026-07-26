@@ -366,7 +366,9 @@ export function SchoolMap() {
     if (!onFloor) {
       return cn(
         "transition-all duration-200 outline-none",
-        "fill-transparent stroke-muted-foreground/50 cursor-default pointer-events-none"
+        invisible
+          ? "fill-transparent stroke-transparent pointer-events-none"
+          : "fill-transparent stroke-muted-foreground/50 pointer-events-none"
       )
     }
 
