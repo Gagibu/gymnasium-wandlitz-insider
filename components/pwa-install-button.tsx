@@ -15,8 +15,7 @@ export function PWAInstallButton() {
   const [isInstalled, setIsInstalled] = useState(false)
 
   useEffect(() => {
-    // Register the new self-unregistering service worker to replace any old cached ones
-    // This forces the browser to fetch the new SW which will then clean up and unregister itself
+    // Register the offline-capable service worker
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("/sw.js", { updateViaCache: "none" })
         .catch(() => {

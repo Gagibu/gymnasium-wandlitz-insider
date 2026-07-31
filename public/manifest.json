@@ -1,8 +1,9 @@
 {
   "name": "Gymnasium Wandlitz Insider",
   "short_name": "GW Insider",
-  "description": "Diese Website befindet sich derzeit im Aufbau. Bald verfügbar!",
+  "description": "Der inoffizielle Insider für das Gymnasium Wandlitz.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#1a1d2e",
   "theme_color": "#1a1d2e",
@@ -19,6 +20,12 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }
