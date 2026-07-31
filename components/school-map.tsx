@@ -662,93 +662,123 @@ export function SchoolMap() {
     }
   }, [handleWheel, handleTouchStart, handleTouchMove, handleTouchEnd])
 
-  const floorLabels: Record<Floor, string> = {
-    1: "Etage 1",
-    2: "Etage 2",
-    3: "Etage 3",
-  }
 
-  const STROKE_WIDTH = 1.2
+const floorLabels: Record<Floor, string> = {
+  1: "Etage 1",
+  2: "Etage 2",
+  3: "Etage 3",
+}
 
-  const getShapeClass = (shape: ShapeDef) => {
-    const state = shape.floors[floor]
-    const isSelected = selected === shape.id && state.visual === "visible" && state.clickable
+const STROKE_WIDTH = 1.2
 
-    if (state.visual === "disabled") {
-      return cn(
-        "transition-all duration-200 outline-none pointer-events-none",
-        "fill-transparent stroke-muted-foreground/50"
-      )
-    }
+type RenderMode = "disabled" | "visible" | "hidden" | "selected"
 
-    if (state.visual === "visible") {
+const getVisualClass = (_shape: ShapeDef, mode: RenderMode, clickable: boolean) => {
+  switch (mode) {
+    case "disabled":
       return cn(
         "transition-all duration-200 outline-none",
-        state.clickable ? "cursor-pointer pointer-events-auto" : "pointer-events-none",
-
-        isSelected
-          ? "fill-primary/30 stroke-primary"
-          : "fill-transparent stroke-foreground",
-
-        state.clickable && !isSelected
-          ? "hover:fill-primary/10 hover:stroke-primary"
-          : null
+        "fill-transparent stroke-muted-foreground/50"
       )
-    }
 
-    return cn(
-      "transition-all duration-200 outline-none fill-transparent stroke-transparent",
-      state.clickable
-        ? "cursor-pointer pointer-events-auto hover:fill-primary/10 hover:stroke-primary"
-        : "pointer-events-none"
-    )
+    case "visible":
+      return cn(
+        "transition-all duration-200 outline-none",
+        "fill-transparent stroke-foreground",
+        clickable ? "hover:fill-primary/10 hover:stroke-primary" : null
+      )
+
+    case "hidden":
+      return cn(
+        "transition-all duration-200 outline-none",
+        "fill-transparent stroke-transparent",
+        clickable ? "hover:fill-primary/10 hover:stroke-primary" : null
+      )
+
+    case "selected":
+      return cn(
+        "transition-all duration-200 outline-none",
+        "fill-primary/30 stroke-primary"
+      )
+  }
+}
+
+const getInteractionProps = (
+  shape: ShapeDef,
+  mode: RenderMode,
+  clickable: boolean
+) => {
+  const interactive = clickable && mode !== "disabled"
+
+  return {
+    interactionClassName: interactive ? "cursor-pointer pointer-events-auto" : "pointer-events-none",
+    role: interactive ? "button" : undefined,
+    tabIndex: interactive ? 0 : -1,
+    "aria-disabled": !interactive,
+    onClick: interactive ? () => handleSelect(shape.id) : undefined,
+    onKeyDown: (e: React.KeyboardEvent) => {
+      if (!interactive) return
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault()
+        handleSelect(shape.id)
+      }
+    },
+  }
+}
+
+const shouldRenderShapeInMode = (shape: ShapeDef, mode: RenderMode) => {
+  const state = shape.floors[floor]
+  if (mode === "selected") return selected === shape.id
+  if (selected === shape.id) return false
+  return state.visual === mode
+}
+
+const renderShape = (shape: ShapeDef, mode: RenderMode) => {
+  if (!shouldRenderShapeInMode(shape, mode)) return null
+
+  const state = shape.floors[floor]
+  const clickable = state.clickable
+
+  if (mode === "hidden" && !clickable) return null
+  const isSelected = mode === "selected"
+  const strokeWidth = isSelected ? (STROKE_WIDTH * 1.35) / zoom : STROKE_WIDTH / zoom
+  const interactionProps = getInteractionProps(shape, mode, clickable)
+  const visualClass = getVisualClass(shape, mode, clickable)
+
+  const commonProps = {
+    id: shape.id,
+    "aria-label": shape.ariaLabel,
+    className: cn(visualClass, interactionProps.interactionClassName),
+    vectorEffect: "non-scaling-stroke" as const,
+    style: {
+      strokeWidth,
+    },
+    role: interactionProps.role,
+    tabIndex: interactionProps.tabIndex,
+    "aria-disabled": interactionProps["aria-disabled"],
+    onClick: interactionProps.onClick,
+    onKeyDown: interactionProps.onKeyDown,
   }
 
-  const renderShape = (shape: ShapeDef) => {
-    const state = shape.floors[floor]
-    if (state.visual === "hidden" && !state.clickable) return null
-
-    const isSelected = selected === shape.id && state.visual === "visible" && state.clickable
-    const strokeWidth = isSelected ? (STROKE_WIDTH * 1.35) / zoom : STROKE_WIDTH / zoom
-    const commonProps = {
-      id: shape.id,
-      role: state.clickable ? "button" : undefined,
-      tabIndex: state.clickable ? 0 : -1,
-      'aria-label': shape.ariaLabel,
-      'aria-disabled': !state.clickable,
-      onClick: () => handleSelect(shape.id),
-      onKeyDown: (e: React.KeyboardEvent) => {
-        if (!state.clickable) return
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault()
-          handleSelect(shape.id)
-        }
-      },
-      className: getShapeClass(shape),
-      vectorEffect: "non-scaling-stroke" as const,
-      style: {
-        strokeWidth,
-      },
-    }
-
-    if (shape.geometry.kind === "path") {
-      return <path key={shape.id} {...commonProps} d={shape.geometry.d} />
-    }
-
-    return (
-      <rect
-        key={shape.id}
-        {...commonProps}
-        width={shape.geometry.width}
-        height={shape.geometry.height}
-        x={shape.geometry.x}
-        y={shape.geometry.y}
-        transform={shape.geometry.transform}
-      />
-    )
+  if (shape.geometry.kind === "path") {
+    return <path key={shape.id} {...commonProps} d={shape.geometry.d} />
   }
 
   return (
+    <rect
+      key={shape.id}
+      {...commonProps}
+      width={shape.geometry.width}
+      height={shape.geometry.height}
+      x={shape.geometry.x}
+      y={shape.geometry.y}
+      transform={shape.geometry.transform}
+    />
+  )
+}
+
+return (
+
     <div className="flex flex-col gap-8">
       <div ref={cardRef} className="bg-card border border-border rounded-xl p-1 md:p-6 relative">
         <div className="relative w-full">
@@ -780,13 +810,16 @@ export function SchoolMap() {
               >
                 {mapShapes
                   .filter((shape) => shape.floors[floor].visual === "disabled")
-                  .map(renderShape)}
+                  .map((shape) => renderShape(shape, "disabled"))}
                 {mapShapes
                   .filter((shape) => shape.floors[floor].visual === "visible")
-                  .map(renderShape)}
+                  .map((shape) => renderShape(shape, "visible"))}
                 {mapShapes
-                  .filter((shape) => shape.floors[floor].visual === "hidden" && shape.floors[floor].clickable)
-                  .map(renderShape)}
+                  .filter((shape) => shape.floors[floor].visual === "hidden")
+                  .map((shape) => renderShape(shape, "hidden"))}
+                {selected
+                  ? renderShape(shapeById[selected], "selected")
+                  : null}
               </svg>
             </div>
           </div>
