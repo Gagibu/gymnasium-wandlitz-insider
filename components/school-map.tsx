@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useRef, useCallback, useEffect } from "react"
+import { useState, useRef, useCallback, useEffect, useMemo } from "react"
+import { Search, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 type BuildingId =
@@ -417,6 +418,94 @@ const shapeById = Object.fromEntries(mapShapes.map((shape) => [shape.id, shape])
   ShapeDef
 >
 
+const ALL_FLOORS: Floor[] = [1, 2, 3]
+
+type SearchResult = {
+  key: string
+  id: BuildingId
+  floor: Floor
+  building: BuildingInfo
+  matchedRooms: string[]
+  matchedIn: string[]
+  score: number
+}
+
+const normalize = (value: string) =>
+  value
+    .toLowerCase()
+    .replace(/ä/g, "ae")
+    .replace(/ö/g, "oe")
+    .replace(/ü/g, "ue")
+    .replace(/ß/g, "ss")
+    .trim()
+
+/**
+ * Durchsucht alle Gebäudeteile über alle Etagen hinweg. Es werden nur
+ * Gebäudeteile zurückgegeben, die auf mindestens einer Etage anklickbar sind.
+ */
+const searchBuildings = (rawQuery: string): SearchResult[] => {
+  const query = normalize(rawQuery)
+  if (query.length === 0) return []
+
+  const results: SearchResult[] = []
+
+  for (const shape of mapShapes) {
+    const building = buildings[shape.id]
+    if (!building) continue
+
+    const clickableFloors = ALL_FLOORS.filter((f) => shape.floors[f].clickable)
+    if (clickableFloors.length === 0) continue
+
+    const name = normalize(building.name)
+    const shortName = normalize(building.shortName)
+    const id = normalize(building.id)
+    const description = normalize(building.description)
+    const matchedRooms = building.rooms.filter((room) => normalize(room).includes(query))
+
+    const matchedIn: string[] = []
+    let score = Number.POSITIVE_INFINITY
+
+    if (shortName.startsWith(query) || name.startsWith(query)) {
+      matchedIn.push("Name")
+      score = Math.min(score, 0)
+    } else if (shortName.includes(query) || name.includes(query)) {
+      matchedIn.push("Name")
+      score = Math.min(score, 1)
+    }
+
+    if (id.includes(query)) {
+      if (!matchedIn.includes("Name")) matchedIn.push("Kennung")
+      score = Math.min(score, 2)
+    }
+
+    if (matchedRooms.length > 0) {
+      matchedIn.push("Raum")
+      score = Math.min(score, 3)
+    }
+
+    if (description.includes(query)) {
+      matchedIn.push("Beschreibung")
+      score = Math.min(score, 4)
+    }
+
+    if (matchedIn.length === 0) continue
+
+    for (const f of clickableFloors) {
+      results.push({
+        key: `${shape.id}-${f}`,
+        id: shape.id,
+        floor: f,
+        building,
+        matchedRooms,
+        matchedIn,
+        score,
+      })
+    }
+  }
+
+  return results.sort((a, b) => a.score - b.score || a.building.name.localeCompare(b.building.name) || a.floor - b.floor)
+}
+
 const MIN_ZOOM = 1
 const MAX_ZOOM = 5
 
@@ -427,6 +516,13 @@ const DEFAULT_VIEWPORT_HEIGHT = 240
 export function SchoolMap() {
   const [selected, setSelected] = useState<BuildingId | null>(null)
   const [floor, setFloor] = useState<Floor>(1)
+
+  // Suche
+  const [query, setQuery] = useState("")
+  const [isSearchOpen, setIsSearchOpen] = useState(false)
+  const [activeIndex, setActiveIndex] = useState(-1)
+  const searchWrapperRef = useRef<HTMLDivElement>(null)
+  const searchInputRef = useRef<HTMLInputElement>(null)
 
   // Zoom & pan state
   const [zoom, setZoom] = useState(1)
@@ -497,6 +593,78 @@ export function SchoolMap() {
     if (!isInteractiveOnFloor(id, floor)) return
     setSelected((prev) => (prev === id ? null : id))
   }
+
+  const searchResults = useMemo(() => searchBuildings(query), [query])
+
+  const closeSearchResults = useCallback(() => {
+    setIsSearchOpen(false)
+    setActiveIndex(-1)
+  }, [])
+
+  const handleResultSelect = useCallback(
+    (result: SearchResult) => {
+      setFloor(result.floor)
+      setSelected(result.id)
+      setQuery("")
+      setIsSearchOpen(false)
+      setActiveIndex(-1)
+      searchInputRef.current?.blur()
+    },
+    []
+  )
+
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.nativeEvent.isComposing || e.keyCode === 229) return
+
+    if (e.key === "Escape") {
+      closeSearchResults()
+      return
+    }
+
+    if (searchResults.length === 0) return
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault()
+      setIsSearchOpen(true)
+      setActiveIndex((prev) => (prev + 1) % searchResults.length)
+      return
+    }
+
+    if (e.key === "ArrowUp") {
+      e.preventDefault()
+      setIsSearchOpen(true)
+      setActiveIndex((prev) => (prev <= 0 ? searchResults.length - 1 : prev - 1))
+      return
+    }
+
+    if (e.key === "Enter") {
+      e.preventDefault()
+      const result = searchResults[activeIndex >= 0 ? activeIndex : 0]
+      if (result) handleResultSelect(result)
+    }
+  }
+
+  useEffect(() => {
+    setActiveIndex(-1)
+  }, [query])
+
+  useEffect(() => {
+    if (!isSearchOpen) return
+
+    const handlePointerDown = (event: MouseEvent | TouchEvent) => {
+      const target = event.target
+      if (!(target instanceof Node)) return
+      if (searchWrapperRef.current?.contains(target)) return
+      closeSearchResults()
+    }
+
+    document.addEventListener("mousedown", handlePointerDown)
+    document.addEventListener("touchstart", handlePointerDown)
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown)
+      document.removeEventListener("touchstart", handlePointerDown)
+    }
+  }, [isSearchOpen, closeSearchResults])
 
   const clampPan = useCallback(
     (px: number, py: number, z: number, containerW: number, containerH: number) => {
@@ -780,6 +948,112 @@ const renderShape = (shape: ShapeDef, mode: RenderMode) => {
 return (
 
     <div className="flex flex-col gap-8">
+      <div ref={searchWrapperRef} className="relative z-30">
+        <div className="relative">
+          <Search
+            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+            aria-hidden="true"
+          />
+          <input
+            ref={searchInputRef}
+            type="text"
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value)
+              setIsSearchOpen(true)
+            }}
+            onFocus={() => setIsSearchOpen(true)}
+            onKeyDown={handleSearchKeyDown}
+            placeholder="Gebäude, Raum oder Bereich suchen …"
+            aria-label="Gebäudeteile und Räume durchsuchen"
+            role="combobox"
+            aria-expanded={isSearchOpen && searchResults.length > 0}
+            aria-controls="schulplan-suchergebnisse"
+            aria-autocomplete="list"
+            aria-activedescendant={
+              activeIndex >= 0 && searchResults[activeIndex]
+                ? `suchergebnis-${searchResults[activeIndex].key}`
+                : undefined
+            }
+            className={cn(
+              "w-full rounded-xl border border-border bg-card py-3 pl-10 pr-10 text-sm md:text-base",
+              "text-foreground placeholder:text-muted-foreground",
+              "outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-ring/40"
+            )}
+          />
+          {query.length > 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                setQuery("")
+                setActiveIndex(-1)
+                searchInputRef.current?.focus()
+              }}
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1.5 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+              aria-label="Suche zurücksetzen"
+            >
+              <X className="h-4 w-4" aria-hidden="true" />
+            </button>
+          )}
+        </div>
+
+        {isSearchOpen && query.trim().length > 0 && (
+          <div
+            id="schulplan-suchergebnisse"
+            role="listbox"
+            aria-label="Suchergebnisse"
+            className={cn(
+              "absolute left-0 right-0 top-full mt-2 max-h-80 overflow-y-auto",
+              "rounded-xl border border-border bg-popover shadow-lg",
+              "animate-in fade-in slide-in-from-top-1 duration-150"
+            )}
+          >
+            {searchResults.length === 0 ? (
+              <p className="px-4 py-3 text-sm text-muted-foreground">
+                Keine Treffer für &bdquo;{query}&ldquo;.
+              </p>
+            ) : (
+              <ul className="flex flex-col p-1">
+                {searchResults.map((result, index) => (
+                  <li key={result.key}>
+                    <button
+                      type="button"
+                      id={`suchergebnis-${result.key}`}
+                      role="option"
+                      aria-selected={index === activeIndex}
+                      onMouseEnter={() => setActiveIndex(index)}
+                      onClick={() => handleResultSelect(result)}
+                      className={cn(
+                        "flex w-full flex-col gap-1 rounded-lg px-3 py-2.5 text-left transition-colors",
+                        index === activeIndex ? "bg-secondary" : "hover:bg-secondary/60",
+                        selected === result.id && floor === result.floor ? "ring-1 ring-primary" : null
+                      )}
+                    >
+                      <span className="flex items-center justify-between gap-3">
+                        <span className="text-sm font-medium text-foreground">
+                          {result.building.name}
+                        </span>
+                        <span className="shrink-0 rounded-md bg-primary/15 px-2 py-0.5 text-xs font-medium text-primary">
+                          Etage {result.floor}
+                        </span>
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {result.matchedRooms.length > 0
+                          ? result.matchedRooms.join(", ")
+                          : result.building.description}
+                      </span>
+                      <span className="text-[11px] uppercase tracking-wider text-muted-foreground/70">
+                        Treffer in: {result.matchedIn.join(" · ")}
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+      </div>
+
       <div ref={cardRef} className="bg-card border border-border rounded-xl p-1 md:p-6 relative">
         <div className="relative w-full">
           <div
