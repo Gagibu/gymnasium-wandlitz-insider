@@ -12,8 +12,19 @@ type BuildingId =
   | "foyer"
   | "essenraum"
   | "haus1"
+  | "Archiv"
+  | "Foyer2"
+  | "Bibliothek"
+  | "uUukH"
+  | "L1oB"
+  | "zaub"
+  | "Bergs-komp"
+  | "nTal"
+  | "haus25"
 
 type Floor = 1 | 2 | 3
+
+type VisualState = "visible" | "hidden" | "disabled"
 
 interface BuildingInfo {
   id: BuildingId
@@ -23,88 +34,388 @@ interface BuildingInfo {
   rooms: string[]
 }
 
+type FloorState = {
+  visual: VisualState
+  clickable: boolean
+}
+
+type ShapeGeometry =
+  | {
+      kind: "path"
+      d: string
+    }
+  | {
+      kind: "rect"
+      width: number
+      height: number
+      x: number
+      y: number
+      transform?: string
+    }
+
+type ShapeDef = {
+  id: BuildingId
+  ariaLabel: string
+  geometry: ShapeGeometry
+  floors: Record<Floor, FloorState>
+}
+
 const buildings: Record<BuildingId, BuildingInfo> = {
   building1: {
     id: "building1",
     name: "Turnhalle – Sport",
     shortName: "Turnhalle",
     description:
-      "Die Turnhalle beherbergt die die große Halle (GH1 / GH2), die Umkleiden und Toiletten.",
-    rooms: [
-      "Große Halle (gH1 / gH2)",
-      "Umkleiden",
-      "Toiletten",
-      "mehr Umkleiden",
-    ],
+      "Die Turnhalle beherbergt die große Halle, die Umkleiden und Toiletten.",
+    rooms: ["Große Halle (gH1 / gH2)", "Umkleiden", "Toiletten"],
   },
   building2: {
     id: "building2",
     name: "Feldschule – Gesellschaftswissenschaften",
     shortName: "Feldschule",
     description:
-      "In diesem Gebäude befinden sich die Fachräume für die gesellschaftswissenschaftlichen Fächer wie Geschichte, Politische Bildung und Erdkund / Geographie mit den dazugehörigen Fachräumen. Haus 4: (050; 051; 052; 053; 054; 055)",
-    rooms: [
-      "Geschichte-Fachräume",
-      "Politische Bildung-Fachräume",
-      "Erdkunde-Fachräume",
-      "Toiletten",
-    ],
+      "Hier liegen die Fachräume für Gesellschaftswissenschaften mit den dazugehörigen Fluren und Nebenräumen.",
+    rooms: ["Geschichte-Fachräume", "Politische Bildung", "Erdkunde", "Toiletten"],
   },
   haus2: {
     id: "haus2",
-    name: "Haus 2 - Sprachenunterricht",
+    name: "Haus 2 – Sprachenunterricht",
     shortName: "Haus 2",
-    description: "...",
-    rooms: [
-      "Aula",
-      "kleine Sporthalle",
-      "Sekretariat",
-      "Toiletten",
-    ],
+    description: "Sprachenbereich und zugehörige Unterrichtsräume.",
+    rooms: ["Aula", "kleine Sporthalle", "Sekretariat", "Toiletten"],
   },
   haus3: {
     id: "haus3",
     name: "Haus 3",
     shortName: "Haus 3",
-    description: "...",
+    description: "Neben- und Fachbereich im Campusplan.",
     rooms: [],
   },
   haus5: {
     id: "haus5",
     name: "Haus 5",
     shortName: "Haus 5",
-    description: "...",
+    description: "Weitere Unterrichts- und Funktionsräume.",
     rooms: [],
   },
   foyer: {
     id: "foyer",
     name: "Foyer",
     shortName: "Foyer",
-    description: "...",
+    description: "Zentraler Übergangsbereich.",
     rooms: [],
   },
   essenraum: {
     id: "essenraum",
     name: "Essenraum",
     shortName: "Essenraum",
-    description: "...",
+    description: "Speisebereich und Aufenthaltszone.",
     rooms: [],
   },
   haus1: {
     id: "haus1",
-    name: "haus1",
-    shortName: "haus1",
-    description: "...",
+    name: "Haus 1",
+    shortName: "Haus 1",
+    description: "Verbindungs- und Unterrichtsbereich.",
+    rooms: [],
+  },
+  Archiv: {
+    id: "Archiv",
+    name: "Archiv",
+    shortName: "Archiv",
+    description: "Archivbereich der Schule.",
+    rooms: [],
+  },
+  Foyer2: {
+    id: "Foyer2",
+    name: "Foyer 2",
+    shortName: "Foyer 2",
+    description: "Zweiter Foyerbereich.",
+    rooms: [],
+  },
+  Bibliothek: {
+    id: "Bibliothek",
+    name: "Bibliothek",
+    shortName: "Bibliothek",
+    description: "Bibliotheksbereich.",
+    rooms: [],
+  },
+  uUukH: {
+    id: "uUukH",
+    name: "uUukH",
+    shortName: "uUukH",
+    description: "Spezialbereich uUukH.",
+    rooms: [],
+  },
+  L1oB: {
+    id: "L1oB",
+    name: "L1oB",
+    shortName: "L1oB",
+    description: "Bereich L1oB.",
+    rooms: [],
+  },
+  zaub: {
+    id: "zaub",
+    name: "zaub",
+    shortName: "zaub",
+    description: "Sonderbereich zaub.",
+    rooms: [],
+  },
+  "Bergs-komp": {
+    id: "Bergs-komp",
+    name: "Bergs-komp",
+    shortName: "Bergs-komp",
+    description: "Bereich Bergs-komp.",
+    rooms: [],
+  },
+  nTal: {
+    id: "nTal",
+    name: "nTal",
+    shortName: "nTal",
+    description: "Bereich nTal.",
+    rooms: [],
+  },
+  haus25: {
+    id: "haus25",
+    name: "haus25",
+    shortName: "haus25",
+    description: "Bereich haus25.",
     rooms: [],
   },
 }
 
-// Buildings available on each floor
-const floorBuildings: Record<Floor, BuildingId[]> = {
-  1: ["building1", "haus3", "essenraum", "haus1", "foyer"],
-  2: ["haus1", "foyer", "building2", "haus2", "haus5"],
-  3: ["haus1", "haus2", "haus5"],
-}
+const mapShapes: ShapeDef[] = [
+  {
+    id: "building1",
+    ariaLabel: "Gebäude A – Turnhalle",
+    geometry: {
+      kind: "path",
+      d: "m 20.758603,14.902796 8.333045,10.131956 2.187088,-1.79046 6.076279,7.422309 -2.187088,1.790461 8.017415,9.840493 -20.61788,16.878842 -22.426739,-27.39476 z",
+    },
+    floors: {
+      1: { visual: "visible", clickable: true },
+      2: { visual: "disabled", clickable: false },
+      3: { visual: "disabled", clickable: false },
+    },
+  },
+  {
+    id: "building2",
+    ariaLabel: "Gebäude B – Feldschule",
+    geometry: {
+      kind: "rect",
+      width: 26.458336,
+      height: 14.552083,
+      x: 95.044033,
+      y: -22.734944,
+      transform: "rotate(50.694505)",
+    },
+    floors: {
+      1: { visual: "disabled", clickable: false },
+      2: { visual: "visible", clickable: true },
+      3: { visual: "disabled", clickable: false },
+    },
+  },
+  {
+    id: "haus3",
+    ariaLabel: "Haus 3",
+    geometry: {
+      kind: "path",
+      d: "m 72.634817,1.240357 5.92951,7.243026 -1.68526,1.379636 7.10362,8.67723 -2.18719,1.790646 -7.103671,-8.677288 -23.55778,19.285593 -9.745532,-11.904383 13.195222,-10.802278 3.816023,4.661358 z",
+    },
+    floors: {
+      1: { visual: "hidden", clickable: true },
+      2: { visual: "hidden", clickable: false },
+      3: { visual: "hidden", clickable: false },
+    },
+  },
+  {
+    id: "essenraum",
+    ariaLabel: "Essenraum",
+    geometry: {
+      kind: "path",
+      d: "m 85.739717,17.101957 -1.75703,1.438292 -4.90281,-5.988508 2.99211,-2.449495 -3.00303,-3.709023 7.63757,-6.2525 4.75544,5.808876 -8.89199,7.280459 z",
+    },
+    floors: {
+      1: { visual: "hidden", clickable: true },
+      2: { visual: "hidden", clickable: false },
+      3: { visual: "hidden", clickable: false },
+    },
+  },
+  {
+    id: "Archiv",
+    ariaLabel: "Archiv",
+    geometry: {
+      kind: "path",
+      d: "m 98.039777,33.667165 6.427703,7.845426 5.58487,-4.572056 2.98541,3.646745 -5.58487,4.572056 2.8777,3.515172 -6.59858,5.40193 -2.8777,-3.515171 -1.622843,1.308513 -6.28092,-7.672279 3.72702,-3.117557 -3.04712,-3.803166 z",
+    },
+    floors: {
+      1: { visual: "hidden", clickable: true },
+      2: { visual: "hidden", clickable: false },
+      3: { visual: "hidden", clickable: false },
+    },
+  },
+  {
+    id: "foyer",
+    ariaLabel: "Foyer",
+    geometry: {
+      kind: "path",
+      d: "m 93.038647,24.481535 1.23287,1.505975 -1.50501,1.23207 8.392663,10.257969 -4.409283,3.609657 -9.62854,-11.761473 z",
+    },
+    floors: {
+      1: { visual: "hidden", clickable: false },
+      2: { visual: "hidden", clickable: true },
+      3: { visual: "disabled", clickable: false },
+    },
+  },
+  {
+    id: "Foyer2",
+    ariaLabel: "Foyer 2",
+    geometry: {
+      kind: "path",
+      d: "m 87.121345,29.325734 5.917301,-4.844198 1.232871,1.505973 -1.505001,1.23207 5.27326,6.447586 -4.409329,3.609612 z",
+    },
+    floors: {
+      1: { visual: "hidden", clickable: true },
+      2: { visual: "hidden", clickable: false },
+      3: { visual: "hidden", clickable: false },
+    },
+  },
+  {
+    id: "haus5",
+    ariaLabel: "Haus 5",
+    geometry: {
+      kind: "path",
+      d: "m 131.86145,16.945308 -2.56258,2.09786 8.38633,10.24409 -4.48684,3.673151 7.36895,9.001338 -8.01148,6.558608 6.51667,7.960264 16.58077,-13.573856 -13.88512,-16.962021 -1.52037,1.244655 z",
+    },
+    floors: {
+      1: { visual: "disabled", clickable: false },
+      2: { visual: "hidden", clickable: true },
+      3: { visual: "hidden", clickable: true },
+    },
+  },
+  {
+    id: "haus2",
+    ariaLabel: "Haus 2",
+    geometry: {
+      kind: "path",
+      d: "m 127.04308,16.28767 6.2809,7.672263 -25.80861,21.194663 11.31566,13.903363 0.65775,-0.47475 6.35513,7.762942 -15.81274,12.945112 -6.35514,-7.76294 8.58765,-7.030281 -11.42733,-13.958734 -1.604853,1.330484 -6.28089,-7.672248 z",
+    },
+    floors: {
+      1: { visual: "hidden", clickable: false },
+      2: { visual: "hidden", clickable: true },
+      3: { visual: "hidden", clickable: true },
+    },
+  },
+  {
+    id: "haus1",
+    ariaLabel: "Haus 1",
+    geometry: {
+      kind: "path",
+      d: "m 95.922977,8.765417 6.545953,7.996014 -32.557785,26.65342 -6.545929,-7.995997 11.007967,-9.01168 -1.52641,-1.864544 6.346614,-5.195658 1.52641,1.864544 z",
+    },
+    floors: {
+      1: { visual: "hidden", clickable: true },
+      2: { visual: "hidden", clickable: true },
+      3: { visual: "visible", clickable: true },
+    },
+  },
+  {
+    id: "Bibliothek",
+    ariaLabel: "Bibliothek",
+    geometry: {
+      kind: "path",
+      d: "m 112.135567,28.491709 3.00377,3.669169 9.40648,-7.700637 3.27714,4.003094 5.50101,-4.503411 -6.28089,-7.672254 z",
+    },
+    floors: {
+      1: { visual: "visible", clickable: true },
+      2: { visual: "hidden", clickable: false },
+      3: { visual: "hidden", clickable: false },
+    },
+  },
+  {
+    id: "uUukH",
+    ariaLabel: "uUukH",
+    geometry: {
+      kind: "path",
+      d: "m 110.330587,48.674508 8.50042,10.383439 0.65775,-0.474754 6.35514,7.762942 -15.81278,12.945078 -6.3551,-7.76291 8.58761,-7.030312 -8.53163,-10.421568 z",
+    },
+    floors: {
+      1: { visual: "disabled", clickable: false },
+      2: { visual: "hidden", clickable: false },
+      3: { visual: "hidden", clickable: false },
+    },
+  },
+  {
+    id: "L1oB",
+    ariaLabel: "L1oB",
+    geometry: {
+      kind: "path",
+      d: "m 110.052347,36.940535 2.98541,3.646745 -5.58487,4.572056 2.8777,3.515172 -6.59858,5.40193 -2.89566,-3.53713 -1.60485,1.330486 -6.28094,-7.672285 3.7271,-3.117492 -9.55631,-11.754267 -17.210167,14.089147 -6.545974,-7.996052 11.007969,-9.011681 -1.526411,-1.864545 6.346613,-5.195658 1.52641,1.864545 1.0757,-0.880621 -7.103661,-8.677278 -23.55778,19.285593 -9.745532,-11.904383 13.195222,-10.802278 3.816023,4.661358 14.235058,-11.65354 5.92951,7.243026 -1.68526,1.379636 7.10362,8.67723 -4.90281,-5.988508 2.99211,-2.449495 -3.00303,-3.709023 7.63757,-6.2525 4.75544,5.808876 -8.89199,7.280459 3.16974,3.871899 10.18327,-8.336542 6.54594,7.996014 -9.43028,7.720105 1.23287,1.505975 -1.505,1.23207 11.70096,14.29301 z",
+    },
+    floors: {
+      1: { visual: "visible", clickable: false },
+      2: { visual: "hidden", clickable: false },
+      3: { visual: "hidden", clickable: false },
+    },
+  },
+  {
+    id: "zaub",
+    ariaLabel: "zaub",
+    geometry: {
+      kind: "path",
+      d: "m 110.052347,36.940535 2.98541,3.646745 14.7852,-12.123945 -3.27714,-4.003094 -9.40648,7.700637 -3.00377,-3.669169 -10.97641,8.985848 3.30832,4.035034 z",
+    },
+    floors: {
+      1: { visual: "disabled", clickable: false },
+      2: { visual: "hidden", clickable: false },
+      3: { visual: "hidden", clickable: false },
+    },
+  },
+  {
+    id: "Bergs-komp",
+    ariaLabel: "Bergs-komp",
+    geometry: {
+      kind: "path",
+      d: "m 63.365215,35.418855 11.007968,-9.011682 -1.526421,-1.864553 6.346624,-5.195648 1.526411,1.864544 15.203188,-12.4461011 6.545945,7.9960161 -9.430284,7.720102 1.232871,1.505976 -1.505011,1.23207 7.13886,8.726453 1.505004,-1.23207 1.25378,1.531517 24.37893,-19.957809 2.25579,2.755498 2.56258,-2.09786 8.38633,10.24409 1.52037,-1.244656 13.88512,16.962019 -16.58077,13.573858 -6.51667,-7.960264 8.01148,-6.558616 -7.36896,-9.00134 4.48685,-3.673141 -4.36123,-5.327335 -25.8086,21.194672 11.31567,13.90337 0.65774,-0.47475 6.35508,7.762875 -15.81268,12.945181 -6.35513,-7.762938 8.58764,-7.030278 -11.40936,-13.936773 -1.622884,1.308446 -6.280909,-7.672236 3.799348,-3.110286 -9.62854,-11.761472 -17.210201,14.089117 z",
+    },
+    floors: {
+      1: { visual: "hidden", clickable: false },
+      2: { visual: "visible", clickable: false },
+      3: { visual: "hidden", clickable: false },
+    },
+  },
+  {
+    id: "nTal",
+    ariaLabel: "nTal",
+    geometry: {
+      kind: "path",
+      d: "m 85.739717,17.101959 -3.16974,-3.871901 8.89199,-7.2804586 -4.75544,-5.80887595 -7.63757,6.25249995 3.00303,3.7090226 -2.99211,2.449495 4.90282,5.988509 -7.10363,-8.6772316 1.68526,-1.379635 -5.92951,-7.243026 L 58.399759,12.893897 54.583736,8.2325394 41.388514,19.034817 51.134046,30.9392 l 23.55778,-19.285593 7.103671,8.677289 z",
+    },
+    floors: {
+      1: { visual: "hidden", clickable: false },
+      2: { visual: "disabled", clickable: false },
+      3: { visual: "disabled", clickable: false },
+    },
+  },
+  {
+    id: "haus25",
+    ariaLabel: "haus25",
+    geometry: {
+      kind: "path",
+      d: "m 137.6852,29.287258 -4.36122,-5.327325 -25.87108,21.199411 11.37814,13.898623 0.65774,-0.474751 6.35514,7.762943 -15.81274,12.945114 -6.35513,-7.76294 8.58764,-7.030276 -11.40936,-13.936775 -1.622843,1.308501 -6.28095,-7.67229 8.208613,-6.719944 -1.253783,-1.531518 1.505003,-1.232069 1.25378,1.531518 24.37892,-19.957818 2.25579,2.755499 2.56258,-2.097861 8.38633,10.244089 1.52038,-1.244655 13.88511,16.962021 -16.58076,13.573856 -6.51668,-7.960264 8.01149,-6.558608 -7.36896,-9.001338 z",
+    },
+    floors: {
+      1: { visual: "hidden", clickable: false },
+      2: { visual: "hidden", clickable: false },
+      3: { visual: "visible", clickable: false },
+    },
+  },
+]
+
+const shapeById = Object.fromEntries(mapShapes.map((shape) => [shape.id, shape])) as Record<
+  BuildingId,
+  ShapeDef
+>
 
 const MIN_ZOOM = 1
 const MAX_ZOOM = 5
@@ -112,7 +423,6 @@ const MAX_ZOOM = 5
 const SVG_VIEWBOX_WIDTH = 247.73793
 const SVG_VIEWBOX_HEIGHT = 146.58737
 const DEFAULT_VIEWPORT_HEIGHT = 240
-
 
 export function SchoolMap() {
   const [selected, setSelected] = useState<BuildingId | null>(null)
@@ -129,7 +439,6 @@ export function SchoolMap() {
   const lastPinchMidRef = useRef({ x: 0, y: 0 })
   const isDraggingRef = useRef(false)
   const lastMousePosRef = useRef({ x: 0, y: 0 })
-  // Single-finger touch pan
   const isTouchPanningRef = useRef(false)
   const lastTouchPosRef = useRef({ x: 0, y: 0 })
   const zoomRef = useRef(1)
@@ -167,20 +476,28 @@ export function SchoolMap() {
   const viewportZoomFactor = Math.min(zoom, 2)
   const mapViewportHeight = baseViewportHeight * viewportZoomFactor
 
-  // Auto-clear selection when building becomes unavailable on floor switch
+  const getFloorState = useCallback(
+    (id: BuildingId, targetFloor: Floor) => shapeById[id].floors[targetFloor],
+    []
+  )
+
+  const isInteractiveOnFloor = useCallback(
+    (id: BuildingId, targetFloor: Floor) => getFloorState(id, targetFloor).clickable,
+    [getFloorState]
+  )
+
   const handleFloorChange = (newFloor: Floor) => {
     setFloor(newFloor)
-    if (selected && !floorBuildings[newFloor].includes(selected)) {
+    if (selected && !isInteractiveOnFloor(selected, newFloor)) {
       setSelected(null)
     }
   }
 
   const handleSelect = (id: BuildingId) => {
-    if (!floorBuildings[floor].includes(id)) return
+    if (!isInteractiveOnFloor(id, floor)) return
     setSelected((prev) => (prev === id ? null : id))
   }
 
-  // Clamp pan so we never pan beyond what zoom allows
   const clampPan = useCallback(
     (px: number, py: number, z: number, containerW: number, containerH: number) => {
       const maxPanX = ((z - 1) * containerW) / 2
@@ -193,7 +510,6 @@ export function SchoolMap() {
     []
   )
 
-  // Zoom towards a point (in container-relative coords)
   const zoomTowards = useCallback(
     (newZoom: number, clientX: number, clientY: number) => {
       const container = containerRef.current
@@ -205,14 +521,12 @@ export function SchoolMap() {
       const prevZoom = zoomRef.current
       const clamped = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, newZoom))
 
-      // Point relative to container center
       const px = clientX - rect.left - cw / 2
       const py = clientY - rect.top - ch / 2
 
       const scale = clamped / prevZoom
 
       setPan((prevPan) => {
-        // Adjust pan so the point under cursor stays fixed
         const newPanX = scale * (prevPan.x - px) + px
         const newPanY = scale * (prevPan.y - py) + py
         return clampPan(newPanX, newPanY, clamped, cw, ch)
@@ -230,7 +544,6 @@ export function SchoolMap() {
     setPan({ x: 0, y: 0 })
   }
 
-  // Mouse wheel zoom
   const handleWheel = useCallback(
     (e: WheelEvent) => {
       e.preventDefault()
@@ -241,15 +554,11 @@ export function SchoolMap() {
     [zoomTowards]
   )
 
-  // Mouse drag pan
-  const handleMouseDown = useCallback(
-    (e: React.MouseEvent) => {
-      if (zoomRef.current <= 1) return
-      isDraggingRef.current = true
-      lastMousePosRef.current = { x: e.clientX, y: e.clientY }
-    },
-    []
-  )
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if (zoomRef.current <= 1) return
+    isDraggingRef.current = true
+    lastMousePosRef.current = { x: e.clientX, y: e.clientY }
+  }, [])
 
   const handleMouseMove = useCallback(
     (e: React.MouseEvent) => {
@@ -269,12 +578,12 @@ export function SchoolMap() {
     isDraggingRef.current = false
   }, [])
 
-  // Pinch-to-zoom (touch)
   const getTouchDist = (t: TouchList) => {
     const dx = t[0].clientX - t[1].clientX
     const dy = t[0].clientY - t[1].clientY
     return Math.sqrt(dx * dx + dy * dy)
   }
+
   const getTouchMid = (t: TouchList) => ({
     x: (t[0].clientX + t[1].clientX) / 2,
     y: (t[0].clientY + t[1].clientY) / 2,
@@ -285,24 +594,21 @@ export function SchoolMap() {
     return Boolean(cardRef.current?.contains(target))
   }
 
-  const handleTouchStart = useCallback(
-    (e: TouchEvent) => {
-      if (e.touches.length === 2) {
-        e.preventDefault()
-        isPinchingRef.current = true
-        isTouchPanningRef.current = false
-        lastPinchDistRef.current = getTouchDist(e.touches)
-        lastPinchMidRef.current = getTouchMid(e.touches)
-        return
-      }
+  const handleTouchStart = useCallback((e: TouchEvent) => {
+    if (e.touches.length === 2) {
+      e.preventDefault()
+      isPinchingRef.current = true
+      isTouchPanningRef.current = false
+      lastPinchDistRef.current = getTouchDist(e.touches)
+      lastPinchMidRef.current = getTouchMid(e.touches)
+      return
+    }
 
-      if (e.touches.length === 1 && zoomRef.current > 1 && isEventInsideCard(e.target)) {
-        isTouchPanningRef.current = true
-        lastTouchPosRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
-      }
-    },
-    []
-  )
+    if (e.touches.length === 1 && zoomRef.current > 1 && isEventInsideCard(e.target)) {
+      isTouchPanningRef.current = true
+      lastTouchPosRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
+    }
+  }, [])
 
   const handleTouchMove = useCallback(
     (e: TouchEvent) => {
@@ -335,7 +641,6 @@ export function SchoolMap() {
     if (e.touches.length === 0) isTouchPanningRef.current = false
   }, [])
 
-  // Attach wheel to map viewport and touch listeners to the entire page
   useEffect(() => {
     const wheelEl = containerRef.current
     if (wheelEl) {
@@ -357,44 +662,6 @@ export function SchoolMap() {
     }
   }, [handleWheel, handleTouchStart, handleTouchMove, handleTouchEnd])
 
-  const isOnFloor = (id: BuildingId) => floorBuildings[floor].includes(id)
-
-  const buildingClass = (id: BuildingId, invisible = false) => {
-    const onFloor = isOnFloor(id)
-
-    // 4. Fall
-    if (!onFloor) {
-      return cn(
-        "transition-all duration-200 outline-none",
-        invisible
-          ? "fill-transparent stroke-transparent pointer-events-none"
-          : "fill-transparent stroke-muted-foreground/50 pointer-events-none"
-      )
-    }
-
-    // 1. Fall
-    if (selected === id) {
-      return cn(
-        "cursor-pointer transition-all duration-200 outline-none",
-        "fill-primary/30 stroke-primary"
-      )
-    }
-
-    // 2. Fall
-    if (invisible) {
-      return cn(
-        "cursor-pointer transition-all duration-200 outline-none",
-        "fill-transparent stroke-transparent hover:fill-primary/10 hover:stroke-primary"
-      )
-    }
-
-    // 3. Fall
-    return cn(
-      "cursor-pointer transition-all duration-200 outline-none",
-      "fill-transparent stroke-foreground hover:fill-primary/10 hover:stroke-primary"
-    )
-  }
-
   const floorLabels: Record<Floor, string> = {
     1: "Etage 1",
     2: "Etage 2",
@@ -403,22 +670,80 @@ export function SchoolMap() {
 
   const STROKE_WIDTH = 1.2
 
-  const sharedStrokeStyle = {
-    strokeWidth: STROKE_WIDTH / zoom,
+  const getShapeClass = (shape: ShapeDef) => {
+    const state = shape.floors[floor]
+    const isSelected = selected === shape.id && state.visual === "visible" && state.clickable
+
+    if (state.visual === "disabled") {
+      return cn(
+        "transition-all duration-200 outline-none pointer-events-none",
+        "fill-transparent stroke-muted-foreground/50"
+      )
+    }
+
+    if (state.visual === "visible") {
+      return cn(
+        "transition-all duration-200 outline-none",
+        state.clickable ? "cursor-pointer pointer-events-auto" : "pointer-events-none",
+        isSelected ? "fill-white stroke-primary" : "fill-white stroke-foreground",
+        state.clickable && !isSelected ? "hover:fill-white hover:stroke-primary" : null
+      )
+    }
+
+    return cn(
+      "transition-all duration-200 outline-none fill-transparent stroke-transparent",
+      state.clickable ? "cursor-pointer pointer-events-auto hover:fill-white hover:stroke-primary" : "pointer-events-none"
+    )
   }
 
-  const outlineStrokeStyle = {
-    strokeWidth: STROKE_WIDTH / zoom,
-    fill: "none",
-    stroke: "currentColor",
+  const renderShape = (shape: ShapeDef) => {
+    const state = shape.floors[floor]
+    if (state.visual === "hidden" && !state.clickable) return null
+
+    const isSelected = selected === shape.id && state.visual === "visible" && state.clickable
+    const strokeWidth = isSelected ? (STROKE_WIDTH * 1.35) / zoom : STROKE_WIDTH / zoom
+    const commonProps = {
+      id: shape.id,
+      role: state.clickable ? "button" : undefined,
+      tabIndex: state.clickable ? 0 : -1,
+      'aria-label': shape.ariaLabel,
+      'aria-disabled': !state.clickable,
+      onClick: () => handleSelect(shape.id),
+      onKeyDown: (e: React.KeyboardEvent) => {
+        if (!state.clickable) return
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault()
+          handleSelect(shape.id)
+        }
+      },
+      className: getShapeClass(shape),
+      vectorEffect: "non-scaling-stroke" as const,
+      style: {
+        strokeWidth,
+      },
+    }
+
+    if (shape.geometry.kind === "path") {
+      return <path key={shape.id} {...commonProps} d={shape.geometry.d} />
+    }
+
+    return (
+      <rect
+        key={shape.id}
+        {...commonProps}
+        width={shape.geometry.width}
+        height={shape.geometry.height}
+        x={shape.geometry.x}
+        y={shape.geometry.y}
+        transform={shape.geometry.transform}
+      />
+    )
   }
 
   return (
     <div className="flex flex-col gap-8">
-      {/* Floor plan */}
       <div ref={cardRef} className="bg-card border border-border rounded-xl p-1 md:p-6 relative">
         <div className="relative w-full">
-          {/* Zoom + pan container */}
           <div
             ref={containerRef}
             className={cn(
@@ -446,158 +771,19 @@ export function SchoolMap() {
                 aria-label="Interaktiver Schulplan mit anklickbaren Gebäuden und Bereichen"
               >
                 <path
-                  id="building1"
-                  role={isOnFloor("building1") ? "button" : undefined}
-                  tabIndex={isOnFloor("building1") ? 0 : -1}
-                  aria-label="Gebäude A – Hauptgebäude"
-                  aria-disabled={!isOnFloor("building1")}
-                  onClick={() => handleSelect("building1")}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault()
-                      handleSelect("building1")
-                    }
-                  }}
-                  className={buildingClass("building1")}
                   vectorEffect="non-scaling-stroke"
-                  style={sharedStrokeStyle}
-                  d="m 20.758603,14.902796 8.333045,10.131956 2.187088,-1.79046 6.076279,7.422309 -2.187088,1.790461 8.017415,9.840493 -20.61788,16.878842 -22.426739,-27.39476 z"
-                />
-                <rect
-                  id="building2"
-                  role={isOnFloor("building2") ? "button" : undefined}
-                  tabIndex={isOnFloor("building2") ? 0 : -1}
-                  aria-label="Gebäude B – Naturwissenschaften"
-                  aria-disabled={!isOnFloor("building2")}
-                  onClick={() => handleSelect("building2")}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault()
-                      handleSelect("building2")
-                    }
-                  }}
-                  className={buildingClass("building2")}
-                  vectorEffect="non-scaling-stroke"
-                  style={sharedStrokeStyle}
-                  width="26.458336"
-                  height="14.552083"
-                  x="95.044033"
-                  y="-22.734944"
-                  transform="rotate(50.694505)"
-                />
-                <path
-                  vectorEffect="non-scaling-stroke"
-                  style={outlineStrokeStyle}
+                  style={{ strokeWidth: STROKE_WIDTH / zoom, fill: "none", stroke: "currentColor" }}
                   d="m 218.368035,40.095009 -3.05336,2.39381 -12.58914,-15.623807 -2.88773,2.327007 -3.60797,-4.477221 -39.39364,31.742681 -1.93484,-2.49389 -1.88945,1.46622 -10.42507,-13.436369 1.9934,-1.5464 -1.30539,-1.682627 14.00585,-10.86626 -10.64526,-13.72143 -15.92326,12.353753 -4.38255,-5.649471 1.79551,-1.392565 9.6e-4,0.0012 12.19171,-9.459754 -7.58435,-9.775326 -12.191628,9.459025 4.724204,6.08947 -1.795596,1.393293 -0.0016,-0.002 -2.779521,2.156805 7.243011,9.335735 -0.0748,0.05794 -9.952509,-12.82779 2.002742,-1.553722 L 110.816421,2.646473 87.906699,20.420446 83.112434,14.240784 63.382293,29.548247 77.269042,47.447819 96.999190,32.140351 l -0.0016,-0.002 17.795726,-13.807306 9.952426,12.828518 -2.239161,1.737105 -1.827892,-2.35579 -9.553045,7.411403 1.827886,2.355795 -17.164037,13.317323 10.645659,13.7211 27.338603,-21.21072 13.79965,17.78596 -5.77862,4.65584 10.08009,12.50975 2.81029,-2.26498 17.25782,21.41799 -13.3128,10.72675 9.8641,12.24178 24.84258,-20.0182 -9.86378,-12.24137 -1.58502,1.27746 -17.25822,-21.41768 40.75551,-32.839924 6.07642,7.540364 -7.02703,5.50916 11.23609,14.33183 -11.69207,9.16652 9.89253,12.61809 25.61192,-20.07964 -5.79005,-7.38532 0.0134,-0.0104 z"
                 />
-                <path
-                  id="haus3"
-                  role={isOnFloor("haus3") ? "button" : undefined}
-                  tabIndex={isOnFloor("haus3") ? 0 : -1}
-                  aria-label="Haus 3"
-                  aria-disabled={!isOnFloor("haus3")}
-                  onClick={() => handleSelect("haus3")}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault()
-                      handleSelect("haus3")
-                    }
-                  }}
-                  className={buildingClass("haus3", true)}
-                  vectorEffect="non-scaling-stroke"
-                  style={sharedStrokeStyle}
-                  d="m 72.634817,1.240357 5.92951,7.243026 -1.68526,1.379636 7.10362,8.67723 -2.18719,1.790646 -7.103671,-8.677288 -23.55778,19.285593 -9.745532,-11.904383 13.195222,-10.802278 3.816023,4.661358 z"
-                />
-                <path
-                  id="essenraum"
-                  role={isOnFloor("essenraum") ? "button" : undefined}
-                  tabIndex={isOnFloor("essenraum") ? 0 : -1}
-                  aria-label="Essenraum"
-                  aria-disabled={!isOnFloor("essenraum")}
-                  onClick={() => handleSelect("essenraum")}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault()
-                      handleSelect("essenraum")
-                    }
-                  }}
-                  className={buildingClass("essenraum", true)}
-                  vectorEffect="non-scaling-stroke"
-                  style={sharedStrokeStyle}
-                  d="m 85.739717,17.101957 -1.75703,1.438292 -4.90281,-5.988508 2.99211,-2.449495 -3.00303,-3.709023 7.63757,-6.2525 4.75544,5.808876 -8.89199,7.280459 z"
-                />
-                <path
-                  id="haus1"
-                  role={isOnFloor("haus1") ? "button" : undefined}
-                  tabIndex={isOnFloor("haus1") ? 0 : -1}
-                  aria-label="Haus 1"
-                  aria-disabled={!isOnFloor("haus1")}
-                  onClick={() => handleSelect("haus1")}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault()
-                      handleSelect("haus1")
-                    }
-                  }}
-                  className={buildingClass("haus1", true)}
-                  vectorEffect="non-scaling-stroke"
-                  style={sharedStrokeStyle}
-                  d="m 95.922977,8.765417 6.54595,7.996014 -32.557782,26.65342 -6.545929,-7.995997 11.007967,-9.01168 -1.52641,-1.864544 6.346614,-5.195658 1.52641,1.864544 z"
-                />
-                <path
-                  id="foyer"
-                  role={isOnFloor("foyer") ? "button" : undefined}
-                  tabIndex={isOnFloor("foyer") ? 0 : -1}
-                  aria-label="Foyer"
-                  aria-disabled={!isOnFloor("foyer")}
-                  onClick={() => handleSelect("foyer")}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault()
-                      handleSelect("foyer")
-                    }
-                  }}
-                  className={buildingClass("foyer", true)}
-                  vectorEffect="non-scaling-stroke"
-                  style={sharedStrokeStyle}
-                  d="m 93.038647,24.481535 1.23287,1.505975 -1.50501,1.23207 8.39266,10.257969 -4.40928,3.609657 -9.62854,-11.761473 z"
-                />
-                <path
-                  id="haus2"
-                  role={isOnFloor("haus2") ? "button" : undefined}
-                  tabIndex={isOnFloor("haus2") ? 0 : -1}
-                  aria-label="Haus 2"
-                  aria-disabled={!isOnFloor("haus2")}
-                  onClick={() => handleSelect("haus2")}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault()
-                      handleSelect("haus2")
-                    }
-                  }}
-                  className={buildingClass("haus2", true)}
-                  vectorEffect="non-scaling-stroke"
-                  style={sharedStrokeStyle}
-                  d="m 127.043077,16.287670 6.2809,7.672263 -25.80861,21.194663 11.31566,13.903363 0.65775,-0.47475 6.35513,7.762942 -15.81274,12.945112 -6.35514,-7.76294 8.58765,-7.030281 -11.42733,-13.958734 -1.60485,1.330484 -6.28089,-7.672248 z"
-                />
-                <path
-                  id="haus5"
-                  role={isOnFloor("haus5") ? "button" : undefined}
-                  tabIndex={isOnFloor("haus5") ? 0 : -1}
-                  aria-label="Haus 5"
-                  aria-disabled={!isOnFloor("haus5")}
-                  onClick={() => handleSelect("haus5")}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault()
-                      handleSelect("haus5")
-                    }
-                  }}
-                  className={buildingClass("haus5", true)}
-                  vectorEffect="non-scaling-stroke"
-                  style={sharedStrokeStyle}
-                  d="m 131.861447,16.945308 -2.56258,2.09786 8.38633,10.24409 -4.48684,3.673151 7.36895,9.001338 -8.01148,6.558608 6.51667,7.960264 16.58077,-13.573856 -13.88512,-16.962021 -1.52037,1.244655 z"
-                />
+                {mapShapes
+                  .filter((shape) => shape.floors[floor].visual === "disabled")
+                  .map(renderShape)}
+                {mapShapes
+                  .filter((shape) => shape.floors[floor].visual === "visible")
+                  .map(renderShape)}
+                {mapShapes
+                  .filter((shape) => shape.floors[floor].visual === "hidden" && shape.floors[floor].clickable)
+                  .map(renderShape)}
               </svg>
             </div>
           </div>
@@ -625,7 +811,6 @@ export function SchoolMap() {
             ))}
           </div>
 
-          {/* Reset Zoom – floats over map, bottom-right; only visible when zoomed in */}
           {zoom > 1 && (
             <button
               onClick={resetZoom}
@@ -641,22 +826,16 @@ export function SchoolMap() {
           )}
         </div>
 
-        {/* Hint text */}
         <p className="text-center text-sm md:text-base leading-relaxed text-muted-foreground text-balance">
           Klicke auf ein Gebäude oder einen Bereich, um mehr zu erfahren.
         </p>
       </div>
 
-      {/* Building details */}
       <div aria-live="polite">
         {selected ? (
           <div className="bg-card border border-border rounded-xl p-6 animate-in fade-in duration-300">
-            <h2 className="text-xl md:text-2xl font-bold text-primary mb-3">
-              {buildings[selected].name}
-            </h2>
-            <p className="text-muted-foreground leading-relaxed mb-5">
-              {buildings[selected].description}
-            </p>
+            <h2 className="text-xl md:text-2xl font-bold text-primary mb-3">{buildings[selected].name}</h2>
+            <p className="text-muted-foreground leading-relaxed mb-5">{buildings[selected].description}</p>
             <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-3">
               Räume & Bereiche
             </h3>
