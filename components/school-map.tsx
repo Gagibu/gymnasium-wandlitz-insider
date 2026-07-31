@@ -685,14 +685,22 @@ export function SchoolMap() {
       return cn(
         "transition-all duration-200 outline-none",
         state.clickable ? "cursor-pointer pointer-events-auto" : "pointer-events-none",
-        isSelected ? "fill-white stroke-primary" : "fill-white stroke-foreground",
-        state.clickable && !isSelected ? "hover:fill-white hover:stroke-primary" : null
+
+        isSelected
+          ? "fill-primary/30 stroke-primary"
+          : "fill-transparent stroke-foreground",
+
+        state.clickable && !isSelected
+          ? "hover:fill-primary/10 hover:stroke-primary"
+          : null
       )
     }
 
     return cn(
       "transition-all duration-200 outline-none fill-transparent stroke-transparent",
-      state.clickable ? "cursor-pointer pointer-events-auto hover:fill-white hover:stroke-primary" : "pointer-events-none"
+      state.clickable
+        ? "cursor-pointer pointer-events-auto hover:fill-primary/10 hover:stroke-primary"
+        : "pointer-events-none"
     )
   }
 
