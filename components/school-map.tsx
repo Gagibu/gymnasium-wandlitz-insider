@@ -77,7 +77,7 @@ type ShapeDef = {
 const buildings: Record<BuildingId, BuildingInfo> = {
   building1: {
     id: "building1",
-    name: "Turnhalle – Sport",
+    name: "Turnhalle – ???",
     shortName: "Turnhalle",
     description:
       "Die Turnhalle beherbergt die große Halle, die Umkleiden und Toiletten.",
@@ -85,15 +85,15 @@ const buildings: Record<BuildingId, BuildingInfo> = {
   },
   building2: {
     id: "building2",
-    name: "Feldschule – Gesellschaftswissenschaften",
+    name: "Feldschule – ???",
     shortName: "Feldschule",
     description:
-      "Hier liegen die Fachräume für Gesellschaftswissenschaften mit den dazugehörigen Fluren und Nebenräumen.",
-    rooms: ["Geschichte-Fachräume", "Politische Bildung", "Erdkunde", "Toiletten"],
+      "Hier liegen die Fachräume für Gesellschaftswissenschaften mit den dazugehörigen Fluren und Nebenräumen. (Geschichts-Fachräume, Politische Bildung, Erdkunde, Toiletten)",
+    rooms: ["050", "051", "052", "053", "054", "055", "WC-Behindert / Lehrer-FS", "WC-Frauen-FS", "WC-Männer-FS", "Lehrerzimmer-FS", "Vorbereitungsraum-FS", "Haustechnik-FS", "Musikschule-Barnim"],
   },
   haus2: {
     id: "haus2",
-    name: "Haus 2 – Sprachenunterricht",
+    name: "Haus 2 – ???",
     shortName: "Haus 2",
     description: "Sprachenbereich und zugehörige Unterrichtsräume.",
     rooms: ["Aula", "kleine Sporthalle", "Sekretariat", "Toiletten"],
@@ -118,14 +118,14 @@ const buildings: Record<BuildingId, BuildingInfo> = {
   },
   haus3: {
     id: "haus3",
-    name: "Haus 3",
+    name: "Haus 3 - ???",
     shortName: "Haus 3",
     description: "Neben- und Fachbereich im Campusplan.",
     rooms: [],
   },
   haus5: {
     id: "haus5",
-    name: "Haus 5",
+    name: "Haus 5 - ???",
     shortName: "Haus 5",
     description: "Weitere Unterrichts- und Funktionsräume.",
     rooms: [],
@@ -150,21 +150,21 @@ const buildings: Record<BuildingId, BuildingInfo> = {
   },
   foyer: {
     id: "foyer",
-    name: "Foyer",
+    name: "Foyer - ???",
     shortName: "Foyer",
     description: "Zentraler Übergangsbereich.",
     rooms: [],
   },
   essenraum: {
     id: "essenraum",
-    name: "Essenraum",
+    name: "Essenraum - ???",
     shortName: "Essenraum",
     description: "Speisebereich und Aufenthaltszone.",
     rooms: [],
   },
   haus1: {
     id: "haus1",
-    name: "Haus 1",
+    name: "Haus 1 - ???",
     shortName: "Haus 1",
     description: "Verbindungs- und Unterrichtsbereich.",
     rooms: [],
@@ -205,21 +205,21 @@ const buildings: Record<BuildingId, BuildingInfo> = {
   },
   Archiv: {
     id: "Archiv",
-    name: "Archiv",
+    name: "Archiv - ???",
     shortName: "Archiv",
     description: "Archivbereich der Schule.",
     rooms: [],
   },
   Foyer2: {
     id: "Foyer2",
-    name: "Foyer 2",
+    name: "unterm Foyer - Mappenmörder",
     shortName: "Foyer 2",
     description: "Zweiter Foyerbereich.",
     rooms: [],
   },
   Bibliothek: {
     id: "Bibliothek",
-    name: "Bibliothek",
+    name: "Bibliothek - ???",
     shortName: "Bibliothek",
     description: "Bibliotheksbereich.",
     rooms: [],
