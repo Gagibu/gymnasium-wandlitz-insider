@@ -27,12 +27,25 @@ type Floor = 1 | 2 | 3
 
 type VisualState = "visible" | "hidden" | "disabled"
 
+interface FloorDetails {
+  description: string
+  rooms: string[]
+}
+
 interface BuildingInfo {
   id: BuildingId
   name: string
   shortName: string
+  /** Fallback-Beschreibung, falls für die Etage keine eigene hinterlegt ist. */
   description: string
+  /** Fallback-Räume, falls für die Etage keine eigenen hinterlegt sind. */
   rooms: string[]
+  /**
+   * Etagenspezifische Inhalte. Gebäude, die es auf mehreren Ebenen gibt
+   * (Haus 1, Haus 2, Haus 5), behalten dieselbe Überschrift, zeigen aber pro
+   * Etage eine eigene Beschreibung und eigene Räume.
+   */
+  floorDetails?: Partial<Record<Floor, FloorDetails>>
 }
 
 type FloorState = {
@@ -84,6 +97,24 @@ const buildings: Record<BuildingId, BuildingInfo> = {
     shortName: "Haus 2",
     description: "Sprachenbereich und zugehörige Unterrichtsräume.",
     rooms: ["Aula", "kleine Sporthalle", "Sekretariat", "Toiletten"],
+    floorDetails: {
+      2: {
+        description:
+          "Auf Etage 2 liegt der öffentliche Teil von Haus 2: die Aula für Veranstaltungen, die kleine Sporthalle und das Sekretariat direkt am Durchgang.",
+        rooms: ["Aula", "kleine Sporthalle", "Sekretariat", "Toiletten"],
+      },
+      3: {
+        description:
+          "Etage 3 ist der eigentliche Sprachenbereich von Haus 2 mit den Fachräumen für Englisch, Französisch und Latein sowie dem Sprachlabor.",
+        rooms: [
+          "Englisch-Fachräume",
+          "Französisch-Fachraum",
+          "Latein-Fachraum",
+          "Sprachlabor",
+          "Toiletten",
+        ],
+      },
+    },
   },
   haus3: {
     id: "haus3",
@@ -98,6 +129,24 @@ const buildings: Record<BuildingId, BuildingInfo> = {
     shortName: "Haus 5",
     description: "Weitere Unterrichts- und Funktionsräume.",
     rooms: [],
+    floorDetails: {
+      2: {
+        description:
+          "Auf Etage 2 von Haus 5 liegen die naturwissenschaftlichen Fachräume für Biologie und Chemie samt Vorbereitungsraum und Sammlung.",
+        rooms: [
+          "Biologie-Fachraum",
+          "Chemie-Fachraum",
+          "Vorbereitungsraum",
+          "Sammlung",
+          "Toiletten",
+        ],
+      },
+      3: {
+        description:
+          "Etage 3 von Haus 5 umfasst die Physikräume sowie die beiden Informatikkabinette mit dem angrenzenden Technikraum.",
+        rooms: ["Physik-Fachraum", "Informatik 1", "Informatik 2", "Technikraum", "Toiletten"],
+      },
+    },
   },
   foyer: {
     id: "foyer",
@@ -119,6 +168,40 @@ const buildings: Record<BuildingId, BuildingInfo> = {
     shortName: "Haus 1",
     description: "Verbindungs- und Unterrichtsbereich.",
     rooms: [],
+    floorDetails: {
+      1: {
+        description:
+          "Auf Etage 1 befindet sich der Haupteingang von Haus 1 mit der Verwaltung, der Schulleitung und dem Hausmeisterbüro.",
+        rooms: [
+          "Haupteingang",
+          "Sekretariat",
+          "Schulleitung",
+          "Hausmeisterbüro",
+          "Toiletten",
+        ],
+      },
+      2: {
+        description:
+          "Etage 2 von Haus 1 beherbergt die Klassenräume der Sekundarstufe I sowie das Lehrerzimmer und den Beratungsraum.",
+        rooms: [
+          "Klassenräume 1.01 – 1.06",
+          "Lehrerzimmer",
+          "Beratungsraum",
+          "Kopierraum",
+          "Toiletten",
+        ],
+      },
+      3: {
+        description:
+          "Auf Etage 3 liegen die Kursräume der Oberstufe, der Fachraum Mathematik und der Selbstlernbereich.",
+        rooms: [
+          "Kursräume 2.01 – 2.05",
+          "Fachraum Mathematik",
+          "Selbstlernbereich",
+          "Toiletten",
+        ],
+      },
+    },
   },
   Archiv: {
     id: "Archiv",
@@ -420,11 +503,22 @@ const shapeById = Object.fromEntries(mapShapes.map((shape) => [shape.id, shape])
 
 const ALL_FLOORS: Floor[] = [1, 2, 3]
 
+/**
+ * Liefert die Beschreibung und Räume eines Gebäudeteils für eine konkrete Etage.
+ * Ohne etagenspezifische Angaben werden die allgemeinen Werte verwendet.
+ */
+const getFloorDetails = (building: BuildingInfo, targetFloor: Floor): FloorDetails =>
+  building.floorDetails?.[targetFloor] ?? {
+    description: building.description,
+    rooms: building.rooms,
+  }
+
 type SearchResult = {
   key: string
   id: BuildingId
   floor: Floor
   building: BuildingInfo
+  details: FloorDetails
   matchedRooms: string[]
   matchedIn: string[]
   score: number
@@ -459,43 +553,49 @@ const searchBuildings = (rawQuery: string): SearchResult[] => {
     const name = normalize(building.name)
     const shortName = normalize(building.shortName)
     const id = normalize(building.id)
-    const description = normalize(building.description)
-    const matchedRooms = building.rooms.filter((room) => normalize(room).includes(query))
 
-    const matchedIn: string[] = []
-    let score = Number.POSITIVE_INFINITY
+    // Etagenunabhängige Treffer (Überschrift/Kennung) gelten für alle Etagen.
+    const baseMatchedIn: string[] = []
+    let baseScore = Number.POSITIVE_INFINITY
 
     if (shortName.startsWith(query) || name.startsWith(query)) {
-      matchedIn.push("Name")
-      score = Math.min(score, 0)
+      baseMatchedIn.push("Name")
+      baseScore = Math.min(baseScore, 0)
     } else if (shortName.includes(query) || name.includes(query)) {
-      matchedIn.push("Name")
-      score = Math.min(score, 1)
+      baseMatchedIn.push("Name")
+      baseScore = Math.min(baseScore, 1)
     }
 
     if (id.includes(query)) {
-      if (!matchedIn.includes("Name")) matchedIn.push("Kennung")
-      score = Math.min(score, 2)
+      if (!baseMatchedIn.includes("Name")) baseMatchedIn.push("Kennung")
+      baseScore = Math.min(baseScore, 2)
     }
 
-    if (matchedRooms.length > 0) {
-      matchedIn.push("Raum")
-      score = Math.min(score, 3)
-    }
-
-    if (description.includes(query)) {
-      matchedIn.push("Beschreibung")
-      score = Math.min(score, 4)
-    }
-
-    if (matchedIn.length === 0) continue
-
+    // Beschreibung und Räume werden pro Etage geprüft, da sie sich unterscheiden können.
     for (const f of clickableFloors) {
+      const details = getFloorDetails(building, f)
+      const matchedIn = [...baseMatchedIn]
+      let score = baseScore
+
+      const matchedRooms = details.rooms.filter((room) => normalize(room).includes(query))
+      if (matchedRooms.length > 0) {
+        matchedIn.push("Raum")
+        score = Math.min(score, 3)
+      }
+
+      if (normalize(details.description).includes(query)) {
+        matchedIn.push("Beschreibung")
+        score = Math.min(score, 4)
+      }
+
+      if (matchedIn.length === 0) continue
+
       results.push({
         key: `${shape.id}-${f}`,
         id: shape.id,
         floor: f,
         building,
+        details,
         matchedRooms,
         matchedIn,
         score,
@@ -593,6 +693,11 @@ export function SchoolMap() {
     if (!isInteractiveOnFloor(id, floor)) return
     setSelected((prev) => (prev === id ? null : id))
   }
+
+  const selectedDetails = useMemo(
+    () => (selected ? getFloorDetails(buildings[selected], floor) : null),
+    [selected, floor]
+  )
 
   const searchResults = useMemo(() => searchBuildings(query), [query])
 
@@ -1040,7 +1145,7 @@ return (
                       <span className="text-xs text-muted-foreground">
                         {result.matchedRooms.length > 0
                           ? result.matchedRooms.join(", ")
-                          : result.building.description}
+                          : result.details.description}
                       </span>
                       <span className="text-[11px] uppercase tracking-wider text-muted-foreground/70">
                         Treffer in: {result.matchedIn.join(" · ")}
@@ -1142,24 +1247,33 @@ return (
       </div>
 
       <div aria-live="polite">
-        {selected ? (
+        {selected && selectedDetails ? (
           <div className="bg-card border border-border rounded-xl p-6 animate-in fade-in duration-300">
-            <h2 className="text-xl md:text-2xl font-bold text-primary mb-3">{buildings[selected].name}</h2>
-            <p className="text-muted-foreground leading-relaxed mb-5">{buildings[selected].description}</p>
-            <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mb-3">
-              Räume & Bereiche
-            </h3>
-            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {buildings[selected].rooms.map((room) => (
-                <li
-                  key={room}
-                  className="flex items-center gap-2 text-foreground bg-secondary rounded-lg px-3 py-2 text-sm"
-                >
-                  <span className="h-2 w-2 rounded-full bg-primary shrink-0" />
-                  {room}
-                </li>
-              ))}
-            </ul>
+            <div className="flex flex-wrap items-center gap-3 mb-3">
+              <h2 className="text-xl md:text-2xl font-bold text-primary">{buildings[selected].name}</h2>
+              <span className="shrink-0 rounded-md bg-primary/15 px-2 py-0.5 text-xs font-medium text-primary">
+                Etage {floor}
+              </span>
+            </div>
+            <p className="text-muted-foreground leading-relaxed">{selectedDetails.description}</p>
+            {selectedDetails.rooms.length > 0 && (
+              <>
+                <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider mt-5 mb-3">
+                  Räume & Bereiche
+                </h3>
+                <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {selectedDetails.rooms.map((room) => (
+                    <li
+                      key={room}
+                      className="flex items-center gap-2 text-foreground bg-secondary rounded-lg px-3 py-2 text-sm"
+                    >
+                      <span className="h-2 w-2 rounded-full bg-primary shrink-0" />
+                      {room}
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
           </div>
         ) : (
           <div className="bg-card/50 border border-dashed border-border rounded-xl p-6 text-center">
