@@ -1249,9 +1249,9 @@ return (
       <div aria-live="polite">
         {selected && selectedDetails ? (
           <div className="bg-card border border-border rounded-xl p-6 animate-in fade-in duration-300">
-            <div className="flex flex-wrap items-center gap-3 mb-3">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
               <h2 className="text-xl md:text-2xl font-bold text-primary">{buildings[selected].name}</h2>
-              <span className="shrink-0 rounded-md bg-primary/15 px-2 py-0.5 text-xs font-medium text-primary">
+              <span className="ml-auto shrink-0 rounded-lg bg-primary/15 px-3 py-1 text-sm md:text-base font-semibold text-primary">
                 Etage {floor}
               </span>
             </div>
