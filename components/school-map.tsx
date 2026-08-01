@@ -80,7 +80,7 @@ const buildings: Record<BuildingId, BuildingInfo> = {
     name: "Turnhalle – ???",
     shortName: "Turnhalle",
     description:
-      "Die Turnhalle beherbergt die große Halle, die Umkleiden und Toiletten.",
+      "Die Turnhalle beherbergt die große Halle, die Umkleiden und Toiletten. In der Sporthalle wird vorallem das Fach Sport unterrichtet.",
     rooms: ["Große Halle (gH1 / gH2)", "Umkleiden", "Toiletten"],
   },
   building2: {
@@ -95,22 +95,23 @@ const buildings: Record<BuildingId, BuildingInfo> = {
     id: "haus2",
     name: "Haus 2 – ???",
     shortName: "Haus 2",
-    description: "Sprachenbereich und zugehörige Unterrichtsräume.",
-    rooms: ["Aula", "kleine Sporthalle", "Sekretariat", "Toiletten"],
+    description: "Sprachenbereich und zugehörige Unterrichtsräume. Hier werden die Sprachen Deutsch, Englisch, Französisch, Spanisch und selten auch (Latein) unterrichtet",
+    rooms: [...],
     floorDetails: {
       2: {
         description:
-          "Auf Etage 2 liegt der öffentliche Teil von Haus 2: die Aula für Veranstaltungen, die kleine Sporthalle und das Sekretariat direkt am Durchgang.",
-        rooms: ["Aula", "kleine Sporthalle", "Sekretariat", "Toiletten"],
+          "Im Erdgeschoss liegt die kleine Sporthalle, das Sekretariat direkt am Durchgang zum Foyer und die Unterrichtsräume vorallem für die Sprachen Französisch und Spanisch.",
+        rooms: ["130", "131", "132", "133", "134", "kleine Sporthalle", "Sekretariat", "Toiletten"],
       },
       3: {
         description:
-          "Etage 3 ist der eigentliche Sprachenbereich von Haus 2 mit den Fachräumen für Englisch, Französisch und Latein sowie dem Sprachlabor.",
+          "Im 1. Obergeschoss von Haus 2 liegen weitere Unterrichtsräume, sowie die Aula. Hier werden vorallem die Sprachen Deutsch und Englisch unterrichtet",
         rooms: [
-          "Englisch-Fachräume",
-          "Französisch-Fachraum",
-          "Latein-Fachraum",
-          "Sprachlabor",
+          "230",
+          "231",
+          "232",
+          "233",
+          "234",
           "Toiletten",
         ],
       },
