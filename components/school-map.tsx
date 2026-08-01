@@ -96,7 +96,7 @@ const buildings: Record<BuildingId, BuildingInfo> = {
     name: "Haus 2 – ???",
     shortName: "Haus 2",
     description: "Sprachenbereich und zugehörige Unterrichtsräume. Hier werden die Sprachen Deutsch, Englisch, Französisch, Spanisch und selten auch (Latein) unterrichtet",
-    rooms: [...],
+    rooms: [],
     floorDetails: {
       2: {
         description:
