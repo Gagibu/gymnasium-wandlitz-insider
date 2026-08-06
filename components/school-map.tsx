@@ -417,7 +417,7 @@ export function SchoolMap() {
               }}
             >
               <svg
-                viewBox="0 0 155.79399 88.973282"
+                viewBox="0 0 155.79399 88.953056"
                 className="block h-auto w-full"
                 role="group"
                 aria-label="Interaktiver Schulplan"

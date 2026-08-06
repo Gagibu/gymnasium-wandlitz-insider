@@ -11,7 +11,14 @@ type Args = {
   onSelect: (id: BuildingId) => void
 }
 
-export const getVisualClass = (mode: RenderMode, clickable: boolean) => {
+export const getVisualClass = (mode: RenderMode, clickable: boolean, isMarker: boolean) => {
+  if (isMarker) {
+    return cn(
+      "transition-all duration-200 outline-none fill-red-600",
+      mode === "selected" ? "stroke-primary" : "stroke-none",
+      clickable && mode !== "disabled" ? "hover:fill-red-400" : null
+    )
+  }
   switch (mode) {
     case "disabled":
       return cn("transition-all duration-200 outline-none", "fill-transparent stroke-muted-foreground/50")
@@ -39,9 +46,10 @@ export function renderBuildingShape({ building, mode, floor, selected, zoom, onS
   if (mode === "hidden" && !clickable) return null
 
   const isSelected = mode === "selected"
+  const isMarker = building.geometry.kind === "ellipse"
   const strokeWidth = isSelected ? (STROKE_WIDTH * 1.35) / zoom : STROKE_WIDTH / zoom
   const interactive = clickable && mode !== "disabled"
-  const visualClass = getVisualClass(mode, clickable)
+  const visualClass = getVisualClass(mode, clickable, isMarker)
 
   const commonProps = {
     id: building.id,
@@ -63,6 +71,18 @@ export function renderBuildingShape({ building, mode, floor, selected, zoom, onS
   }
 
   if (building.geometry.kind === "path") return <path key={`${building.id}-${mode}`} {...commonProps} d={building.geometry.d} />
+  if (building.geometry.kind === "ellipse")
+    return (
+      <ellipse
+        key={`${building.id}-${mode}`}
+        {...commonProps}
+        cx={building.geometry.cx}
+        cy={building.geometry.cy}
+        rx={building.geometry.rx}
+        ry={building.geometry.ry}
+        transform={building.geometry.transform}
+      />
+    )
   return (
     <rect
       key={`${building.id}-${mode}`}
