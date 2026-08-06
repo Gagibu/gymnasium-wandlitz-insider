@@ -16,6 +16,23 @@ export type BuildingId =
   | "Bergs-komp"
   | "nTal"
   | "haus25"
+  | "feldschuleRaum050"
+  | "feldschuleRaum051"
+  | "feldschuleRaum052"
+  | "feldschuleRaum053"
+  | "feldschuleRaum054"
+  | "feldschuleRaum055"
+  | "feldschuleLehrerzimmer"
+  | "feldschuleVorbereitungsraum"
+  | "feldschuleMusikschuleBarnim"
+  | "feldschulePutzmittelraum"
+  | "feldschuleWcJungen"
+  | "feldschuleWcMaedchen"
+  | "feldschuleWcLehrer"
+  | "feldschuleFeuerloescher1"
+  | "feldschuleFeuerloescher2"
+  | "feldschuleFeuermelder1"
+  | "feldschuleFeuermelder2"
 
 export type Floor = 1 | 2 | 3
 export type VisualState = "visible" | "hidden" | "disabled"
@@ -34,6 +51,7 @@ export interface FloorState {
 export type ShapeGeometry =
   | { kind: "path"; d: string }
   | { kind: "rect"; width: number; height: number; x: number; y: number; transform?: string }
+  | { kind: "ellipse"; cx: number; cy: number; rx: number; ry: number; transform?: string }
 
 export interface BuildingData {
   id: BuildingId
