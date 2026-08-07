@@ -22,6 +22,7 @@ export type BuildingId =
   | "feldschuleRaum053"
   | "feldschuleRaum054"
   | "feldschuleRaum055"
+  | "feldschuleHausmeister"
   | "feldschuleLehrerzimmer"
   | "feldschuleVorbereitungsraum"
   | "feldschuleMusikschuleBarnim"
@@ -35,7 +36,9 @@ export type BuildingId =
   | "feldschuleFeuermelder2"
 
 export type Floor = 1 | 2 | 3
-export type VisualState = "visible" | "hidden" | "disabled"
+// "none" renders nothing in the normal buckets (not even a muted outline) but the shape still
+// appears via the dedicated "selected" overlay, so it can stay search-only yet still highlight.
+export type VisualState = "visible" | "hidden" | "disabled" | "none"
 export type RenderMode = "disabled" | "visible" | "hidden" | "selected"
 
 export interface FloorDetails {
