@@ -18,8 +18,19 @@ export type BuildingId =
   | "haus25"
 
 export type Floor = 1 | 2 | 3
+
+/**
+ * Darstellung einer Fläche auf einer Etage, sofern sie nicht anklickbar ist:
+ * - `visible`  – durchgezogener Umriss (Campus-Silhouette der Etage)
+ * - `disabled` – nur angedeutet (gehört nicht zu dieser Etage)
+ * - `hidden`   – wird gar nicht gezeichnet
+ *
+ * Anklickbare Flächen werden immer als interaktiv dargestellt, unabhängig von diesem Wert.
+ */
 export type VisualState = "visible" | "hidden" | "disabled"
-export type RenderMode = "disabled" | "visible" | "hidden" | "selected"
+
+/** Zeichenebene – bestimmt Reihenfolge und Aussehen beim Rendern. */
+export type RenderMode = "disabled" | "outline" | "interactive" | "selected"
 
 export interface FloorDetails {
   description: string
@@ -35,6 +46,12 @@ export type ShapeGeometry =
   | { kind: "path"; d: string }
   | { kind: "rect"; width: number; height: number; x: number; y: number; transform?: string }
 
+/** Ankerpunkt der Beschriftung in viewBox-Koordinaten (liegt garantiert innerhalb der Fläche). */
+export interface LabelAnchor {
+  x: number
+  y: number
+}
+
 export interface BuildingData {
   id: BuildingId
   name: string
@@ -42,8 +59,8 @@ export interface BuildingData {
   description: string
   rooms: string[]
   floorDetails?: Partial<Record<Floor, FloorDetails>>
-  ariaLabel: string
   geometry: ShapeGeometry
+  label?: LabelAnchor
   floors: Record<Floor, FloorState>
 }
 

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'gw-insider-v1';
+const CACHE_NAME = 'gw-insider-v2';
 
 // All assets to pre-cache on install
 const PRECACHE_ASSETS = [
@@ -15,12 +15,16 @@ const PRECACHE_ASSETS = [
   '/apple-icon.png',
 ];
 
-// Install: pre-cache all listed assets
+// Install: pre-cache all listed assets.
+// Bewusst einzeln statt cache.addAll(): Schlägt eine einzige Datei fehl, würde addAll die
+// komplette Installation abbrechen und die App hätte gar keinen Offline-Cache.
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(PRECACHE_ASSETS);
-    }).then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then((cache) =>
+      Promise.all(
+        PRECACHE_ASSETS.map((asset) => cache.add(asset).catch(() => undefined))
+      )
+    ).then(() => self.skipWaiting())
   );
 });
 

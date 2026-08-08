@@ -15,8 +15,9 @@ export function PWAInstallButton() {
   const [isInstalled, setIsInstalled] = useState(false)
 
   useEffect(() => {
-    // Register the offline-capable service worker
-    if ("serviceWorker" in navigator) {
+    // Service Worker nur in der Produktion registrieren. Im Dev-Modus würde er die
+    // HMR-Chunks mitcachen; nach einem Neustart zeigen deren alte URLs ins Leere (404).
+    if (process.env.NODE_ENV === "production" && "serviceWorker" in navigator) {
       navigator.serviceWorker.register("/sw.js", { updateViaCache: "none" })
         .catch(() => {
           // Ignore errors - SW registration is optional

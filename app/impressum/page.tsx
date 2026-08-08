@@ -1,18 +1,26 @@
+import type { Metadata } from "next"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 import { SiteNavigation } from "@/components/site-navigation"
+import { SiteFooter } from "@/components/site-footer"
+
+export const metadata: Metadata = {
+  title: "Impressum",
+  description: "Impressum und rechtliche Hinweise.",
+}
 
 export default function ImpressumPage() {
   return (
-    <main className="min-h-screen bg-background py-12 px-4">
+    <div className="flex min-h-screen flex-col bg-background">
       <SiteNavigation />
-      <div className="max-w-2xl mx-auto">
+
+      <main className="mx-auto w-full max-w-2xl flex-1 px-4 py-12">
         {/* Back link */}
         <Link
           href="/"
           className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8"
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
           <span>Zurück zur Startseite</span>
         </Link>
 
@@ -137,14 +145,12 @@ export default function ImpressumPage() {
             </ul>
           </section>
         </div>
+      </main>
 
-        {/* Footer */}
-        <footer className="mt-12 pt-8 border-t border-border">
-          <p className="text-muted-foreground text-sm text-center">
-            &copy; {new Date().getFullYear()} Gymnasium Wandlitz Insider
-          </p>
-        </footer>
-      </div>
-    </main>
+      <SiteFooter
+        withImpressumLink={false}
+        className="mx-auto w-full max-w-2xl px-4 pb-10"
+      />
+    </div>
   )
 }

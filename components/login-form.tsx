@@ -17,24 +17,19 @@ export function LoginForm() {
     setError("")
     setIsLoading(true)
 
-    try {
-      // Here you would typically make an API call to authenticate
-      // For now, this is just a placeholder
-      if (!username || !password) {
-        setError("Bitte fülle alle Felder aus")
-        setIsLoading(false)
-        return
-      }
+    if (!username || !password) {
+      setError("Bitte fülle alle Felder aus")
+      setIsLoading(false)
+      return
+    }
 
-      // Simulate API call
+    try {
+      // Platzhalter: Hier gehört die Prüfung der Zugangsdaten gegen ein Backend hin.
+      // Zugangsdaten dürfen dabei niemals geloggt werden.
       await new Promise((resolve) => setTimeout(resolve, 500))
 
-      // Placeholder - In production, verify credentials with backend
-      console.log("Login attempted with:", { username, password })
-      
-      // On successful login, redirect to dashboard or home
       router.push("/")
-    } catch (err) {
+    } catch {
       setError("Anmeldung fehlgeschlagen. Bitte versuche es später erneut.")
     } finally {
       setIsLoading(false)
@@ -45,8 +40,11 @@ export function LoginForm() {
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Error message */}
       {error && (
-        <div className="flex items-center gap-2 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
-          <AlertCircle className="h-4 w-4 text-destructive shrink-0" />
+        <div
+          role="alert"
+          className="flex items-center gap-2 p-4 bg-destructive/10 border border-destructive/20 rounded-lg"
+        >
+          <AlertCircle className="h-4 w-4 text-destructive shrink-0" aria-hidden="true" />
           <p className="text-sm text-destructive">{error}</p>
         </div>
       )}
@@ -59,6 +57,7 @@ export function LoginForm() {
         <input
           id="username"
           type="text"
+          autoComplete="username"
           placeholder="Gib deinen Benutzernamen ein"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
@@ -76,6 +75,7 @@ export function LoginForm() {
           <input
             id="password"
             type={showPassword ? "text" : "password"}
+            autoComplete="current-password"
             placeholder="Gib dein Passwort ein"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -87,11 +87,13 @@ export function LoginForm() {
             onClick={() => setShowPassword(!showPassword)}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
             disabled={isLoading}
+            aria-label={showPassword ? "Passwort verbergen" : "Passwort anzeigen"}
+            aria-pressed={showPassword}
           >
             {showPassword ? (
-              <EyeOff className="h-4 w-4" />
+              <EyeOff className="h-4 w-4" aria-hidden="true" />
             ) : (
-              <Eye className="h-4 w-4" />
+              <Eye className="h-4 w-4" aria-hidden="true" />
             )}
           </button>
         </div>

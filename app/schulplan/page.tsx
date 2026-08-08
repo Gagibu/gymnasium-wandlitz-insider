@@ -1,39 +1,45 @@
+import type { Metadata } from "next"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
 import { SiteNavigation } from "@/components/site-navigation"
+import { SiteFooter } from "@/components/site-footer"
 import { SchoolMap } from "@/components/school-map"
+
+export const metadata: Metadata = {
+  title: "Schulplan",
+  description:
+    "Interaktiver Lageplan des Gymnasiums Wandlitz: Gebäude, Räume und Etagen durchsuchen und anzeigen.",
+}
 
 export default function SchulplanPage() {
   return (
-    <main className="min-h-screen bg-background py-12 px-4">
+    <div className="flex min-h-screen flex-col bg-background">
       <SiteNavigation />
-      <div className="max-w-3xl mx-auto">
-        {/* Back link */}
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-8"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          <span>Zurück zur Startseite</span>
-        </Link>
 
-        <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2 text-balance">
-          Schulplan
-        </h1>
-        <p className="text-muted-foreground mb-8 leading-relaxed">
-          Hier findest du den Lageplan des Gymnasiums Wandlitz. Klicke auf ein Gebäude,
-          um nähere Informationen zu den Räumen und Bereichen zu erhalten.
-        </p>
+      <main className="flex-1 px-4 py-12">
+        <div className="mx-auto max-w-3xl">
+          <Link
+            href="/"
+            className="mb-8 inline-flex items-center gap-2 text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+            <span>Zurück zur Startseite</span>
+          </Link>
 
-        <SchoolMap />
-
-        {/* Footer */}
-        <footer className="mt-12 pt-8 border-t border-border">
-          <p className="text-muted-foreground text-sm text-center">
-            &copy; {new Date().getFullYear()} Gymnasium Wandlitz Insider
+          <h1 className="mb-2 text-balance text-3xl font-bold text-foreground md:text-4xl">
+            Schulplan
+          </h1>
+          <p className="mb-8 leading-relaxed text-muted-foreground">
+            Hier findest du den Lageplan des Gymnasiums Wandlitz. Wähle eine Etage, klicke auf ein
+            Gebäude für nähere Informationen zu Räumen und Bereichen – oder suche direkt nach einem
+            Raum.
           </p>
-        </footer>
-      </div>
-    </main>
+
+          <SchoolMap />
+        </div>
+      </main>
+
+      <SiteFooter className="mx-auto mt-12 w-full max-w-3xl px-4 pb-10" />
+    </div>
   )
 }
