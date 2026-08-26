@@ -2,9 +2,6 @@
 // Coordinates are pre-transformed from the Inkscape "Feldschule" group's matrix/translate/rotate
 // chain into the map's flat SVG coordinate space.
 
-export const FELDSCHULE_UMRISS_D =
-  "M 83.293099,65.853988 94.517521,79.564869 83.276292,88.767509 66.597331,68.393787 77.83856,59.191147 81.939956,64.201093 z"
-
 export const FELDSCHULE_TEILBARE_WAND_WEISS_D =
   "m 83.154248,80.664831 l 0.672575,-0.550604 l -0.305869,-0.373626 l -0.672574,0.550604 z M 79.32035,83.803455 l 0.692615,-0.56701 l -0.305869,-0.373626 l -0.692615,0.56701 z"
 
