@@ -8,6 +8,7 @@ import {
   DEFAULT_VIEWPORT_HEIGHT,
   MAX_ZOOM,
   MIN_ZOOM,
+  STROKE_WIDTH,
   SVG_VIEWBOX_HEIGHT,
   SVG_VIEWBOX_WIDTH,
   floorLabels,
@@ -16,6 +17,7 @@ import { buildings, buildingsById } from "@/lib/school-map/data"
 import {
   FELDSCHULE_HINTERGRUND_D,
   FELDSCHULE_TEILBARE_WAND_WEISS_D,
+  FELDSCHULE_UMRISS_D,
 } from "@/lib/school-map/feldschule-decor"
 import { getFloorDetails, searchBuildings } from "@/lib/school-map/search"
 import type { BuildingId, Floor, SearchResult } from "@/lib/school-map/types"
@@ -426,6 +428,15 @@ export function SchoolMap() {
                 role="group"
                 aria-label="Interaktiver Schulplan"
               >
+                {floor === 2 && (
+                  <path
+                    d={FELDSCHULE_UMRISS_D}
+                    className="fill-transparent stroke-foreground pointer-events-none"
+                    style={{ strokeWidth: STROKE_WIDTH / zoom }}
+                    vectorEffect="non-scaling-stroke"
+                    aria-hidden="true"
+                  />
+                )}
                 {buildings
                   .filter((b) => b.floors[floor].visual === "disabled")
                   .map((b) =>
