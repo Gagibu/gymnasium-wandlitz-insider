@@ -39,6 +39,8 @@ export const buildings: BuildingData[] = [
       "Vorbereitungsraum-FS",
       "Haustechnik-FS",
       "Musikschule-Barnim",
+      "Großer Flur (060)",
+      "Windfang (059)",
     ],
     ariaLabel: "Gebäude B – Feldschule",
     geometry: {
@@ -53,11 +55,11 @@ export const buildings: BuildingData[] = [
   },
   {
     id: "feldschuleHausmeister",
-    name: "Feldschule – Hausmeister / Haustechnik",
+    name: "Feldschule – 061 (Hausmeister / Haustechnik)",
     shortName: "Hausmeister FS",
-    description: "Hausmeister- und Haustechnikraum im Gebäude Feldschule.",
+    description: "Hausmeister- und Haustechnikraum im Gebäude Feldschule. Elektro-HAR (Haus-Anschlus-Raum)",
     rooms: [],
-    ariaLabel: "Feldschule – Hausmeister / Haustechnik",
+    ariaLabel: "Feldschule – 061 (Hausmeister / Haustechnik)",
     geometry: {
       kind: "path",
       d: "m 75.405509,70.989399 l -1.461546,1.196496 l 0.786354,0.960773 l -2.5547,2.088031 l -1.514478,-1.876879 l 4.004689,-3.270409 l 0.102171,0.124805 l 0.616543,-0.504734 c 0.317093,0.380426 0.278128,0.75211 -0.116907,1.115062 z",
@@ -172,11 +174,11 @@ export const buildings: BuildingData[] = [
   },
   {
     id: "feldschuleLehrerzimmer",
-    name: "Feldschule – Lehrerzimmer",
+    name: "Feldschule – 058 (Lehrerzimmer)",
     shortName: "Lehrerzimmer FS",
     description: "Lehrerzimmer im Gebäude Feldschule.",
     rooms: [],
-    ariaLabel: "Feldschule – Lehrerzimmer",
+    ariaLabel: "Feldschule – 058 (Lehrerzimmer)",
     geometry: {
       kind: "path",
       d: "m 71.208868,64.687505 l 2.630174,3.212817 l 0.928402,-0.760037 c -0.32624,-0.397497 -0.24342,-0.77442 0.101326,-1.095269 l 0.49473,0.607308 l 0.561327,-0.459531 l -2.630174,-3.212817 z",
@@ -189,11 +191,11 @@ export const buildings: BuildingData[] = [
   },
   {
     id: "feldschuleVorbereitungsraum",
-    name: "Feldschule – Vorbereitungsraum",
+    name: "Feldschule – 056 (Vorbereitungsraum)",
     shortName: "Vorbereitungsraum FS",
     description: "Vorbereitungsraum im Gebäude Feldschule.",
     rooms: [],
-    ariaLabel: "Feldschule – Vorbereitungsraum",
+    ariaLabel: "Feldschule – 056 (Vorbereitungsraum)",
     geometry: {
       kind: "path",
       d: "m 87.795202,84.958257 l -2.902893,-3.545948 l 0.851901,-0.697409 c 0.358969,0.439612 0.776566,0.43892 1.185986,0.146375 l -0.549207,-0.667675 l 0.612489,-0.501415 l 2.902894,3.545948 z",
@@ -206,11 +208,11 @@ export const buildings: BuildingData[] = [
   },
   {
     id: "feldschuleMusikschuleBarnim",
-    name: "Feldschule – Musikschule Barnim",
+    name: "Feldschule – 057 (Musikschule Barnim)",
     shortName: "Musikschule Barnim",
     description: "Von der Musikschule Barnim genutzter Raum im Gebäude Feldschule.",
     rooms: [],
-    ariaLabel: "Feldschule – Musikschule Barnim",
+    ariaLabel: "Feldschule – 057 (Musikschule Barnim)",
     geometry: {
       kind: "path",
       d: "m 79.041095,69.975782 l -0.160666,-0.196256 l 4.518952,-3.699443 l 2.741884,3.349272 l -3.492595,2.841626 l -1.908326,-2.329098 l -1.034015,0.846497 l -0.121173,-0.148015 c 0.349763,-0.398777 0.380481,-0.794442 0.092156,-1.186997 z",
@@ -223,11 +225,11 @@ export const buildings: BuildingData[] = [
   },
   {
     id: "feldschulePutzmittelraum",
-    name: "Feldschule – Putzmittelraum",
+    name: "Feldschule – 067 (Putzmittelraum)",
     shortName: "Putzmittelraum FS",
-    description: "Putzmittelraum im Gebäude Feldschule.",
+    description: "Putzmittelraum im Gebäude Feldschule. (Pumi)",
     rooms: [],
-    ariaLabel: "Feldschule – Putzmittelraum",
+    ariaLabel: "Feldschule – 067 (Putzmittelraum)",
     geometry: {
       kind: "path",
       d: "m 79.706332,70.788382 l 1.034015,-0.846497 l 1.908326,2.329098 l -1.048679,0.830549 l -0.409482,-0.50019 l 0.572127,-0.46723 c -0.332869,-0.31253 -0.665817,-0.330536 -0.998844,-0.054017 z",
@@ -240,11 +242,11 @@ export const buildings: BuildingData[] = [
   },
   {
     id: "feldschuleWcJungen",
-    name: "Feldschule – WC Jungen",
+    name: "Feldschule – 065 (WC Jungen)",
     shortName: "WC Jungen FS",
     description: "Toiletten für Jungen im Gebäude Feldschule.",
     rooms: [],
-    ariaLabel: "Feldschule – WC Jungen",
+    ariaLabel: "Feldschule – 065 (WC Jungen)",
     geometry: {
       kind: "path",
       d: "m 77.305689,76.292541 l 0.151644,0.185236 l 1.457642,-1.193299 l -0.147489,-0.180161 l -0.594815,0.489199 c -0.274541,-0.390108 -0.228175,-0.738731 0.139097,-1.045869 l -0.690709,-0.843716 l -1.457642,1.193299 l 0.69415,0.847919 c -0.33121,0.327642 -0.370128,0.666569 -0.116751,1.016783 z M 73.924563,76.942274 l 2.339853,-1.915798 l 0.588986,0.713278 c -0.332712,0.353583 -0.362352,0.636028 -0.112585,1.022179 l 0.56487,-0.469396 l 0.145817,0.183996 l -2.479444,2.029798 l -1.18709,-1.450056 z",
@@ -257,11 +259,11 @@ export const buildings: BuildingData[] = [
   },
   {
     id: "feldschuleWcMaedchen",
-    name: "Feldschule – WC Mädchen",
+    name: "Feldschule – 063 (WC Mädchen)",
     shortName: "WC Mädchen FS",
     description: "Toiletten für Mädchen im Gebäude Feldschule.",
     rooms: [],
-    ariaLabel: "Feldschule – WC Mädchen",
+    ariaLabel: "Feldschule – 063 (WC Mädchen)",
     geometry: {
       kind: "path",
       d: "m 74.949555,73.414471 l -0.219237,-0.267804 l 1.460767,-1.195858 l 0.215083,0.262728 l -0.597025,0.4865 c 0.328213,0.34617 0.679127,0.36956 1.052743,0.07017 l 0.712164,0.876318 l -1.459971,1.195206 l -0.716403,-0.879867 c -0.386594,0.259989 -0.726533,0.231212 -1.019817,-0.086333 z M 73.924563,76.942274 l 2.340169,-1.915412 l -0.867053,-1.065002 c -0.362043,0.279235 -0.79514,0.190074 -1.019817,-0.086333 l 0.571693,-0.461061 l -0.219237,-0.267799 l -2.483978,2.030133 l 1.538947,1.879858 z",
@@ -274,11 +276,11 @@ export const buildings: BuildingData[] = [
   },
   {
     id: "feldschuleWcLehrer",
-    name: "Feldschule – WC Lehrer (barrierefrei)",
+    name: "Feldschule – 062 (WC Lehrer - barrierefrei)",
     shortName: "WC Lehrer FS",
     description: "Barrierefreie Toilette für Lehrkräfte im Gebäude Feldschule.",
     rooms: [],
-    ariaLabel: "Feldschule – WC Lehrer (barrierefrei)",
+    ariaLabel: "Feldschule – 062 (WC Lehrer - barrierefrei)",
     geometry: {
       kind: "path",
       d: "m 74.730315,73.146669 l -0.786353,-0.960774 l 1.461552,-1.196501 l 0.092579,0.113087 l -0.596409,0.494332 c 0.301386,0.366914 0.656793,0.393431 1.06622,0.079553 l 0.223186,0.274436 z",
