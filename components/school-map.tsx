@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { Search, X } from "lucide-react"
+import { Maximize2, Minimize2, MoreHorizontal, Search, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 import {
@@ -34,6 +34,11 @@ export function SchoolMap() {
 
   const searchWrapperRef = useRef<HTMLDivElement>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
+
+  const [isExpandToggled, setIsExpandToggled] = useState(false)
+  const [isOptionsMenuOpen, setIsOptionsMenuOpen] = useState(false)
+  const [showProtectiveEquipment, setShowProtectiveEquipment] = useState(false)
+  const optionsMenuRef = useRef<HTMLDivElement>(null)
 
   const [zoom, setZoom] = useState(1)
   const [pan, setPan] = useState({ x: 0, y: 0 })
@@ -161,6 +166,24 @@ export function SchoolMap() {
       document.removeEventListener("touchstart", handlePointerDown)
     }
   }, [isSearchOpen, closeSearchResults])
+
+  useEffect(() => {
+    if (!isOptionsMenuOpen) return
+
+    const handlePointerDown = (event: MouseEvent | TouchEvent) => {
+      const target = event.target
+      if (!(target instanceof Node)) return
+      if (optionsMenuRef.current?.contains(target)) return
+      setIsOptionsMenuOpen(false)
+    }
+
+    document.addEventListener("mousedown", handlePointerDown)
+    document.addEventListener("touchstart", handlePointerDown)
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown)
+      document.removeEventListener("touchstart", handlePointerDown)
+    }
+  }, [isOptionsMenuOpen])
 
   const zoomTowards = useCallback(
     (newZoom: number, clientX: number, clientY: number) => {
@@ -498,6 +521,71 @@ export function SchoolMap() {
                     })
                   : null}
               </svg>
+            </div>
+          </div>
+
+          <div
+            className="absolute top-1 right-1 z-20 flex gap-1 rounded-lg border border-border bg-card/90 p-1 shadow-md backdrop-blur-sm md:top-5 md:right-5"
+            role="group"
+            aria-label="Kartenoptionen"
+          >
+            <button
+              type="button"
+              onClick={() => setIsExpandToggled((prev) => !prev)}
+              className={cn(
+                "flex h-9 w-9 items-center justify-center rounded-md transition-all duration-200",
+                "text-muted-foreground hover:bg-secondary hover:text-foreground"
+              )}
+              aria-pressed={isExpandToggled}
+              aria-label={isExpandToggled ? "Ansicht verkleinern" : "Ansicht vergrößern"}
+            >
+              {isExpandToggled ? (
+                <Minimize2 className="h-4 w-4" aria-hidden="true" />
+              ) : (
+                <Maximize2 className="h-4 w-4" aria-hidden="true" />
+              )}
+            </button>
+
+            <div ref={optionsMenuRef} className="relative">
+              <button
+                type="button"
+                onClick={() => setIsOptionsMenuOpen((prev) => !prev)}
+                className={cn(
+                  "flex h-9 w-9 items-center justify-center rounded-md transition-all duration-200",
+                  "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                )}
+                aria-haspopup="menu"
+                aria-expanded={isOptionsMenuOpen}
+                aria-label="Weitere Kartenoptionen"
+              >
+                <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
+              </button>
+
+              {isOptionsMenuOpen && (
+                <div
+                  role="menu"
+                  aria-label="Weitere Kartenoptionen"
+                  className={cn(
+                    "absolute right-0 top-full z-30 mt-2 min-w-56 overflow-hidden",
+                    "rounded-xl border border-border bg-popover shadow-lg",
+                    "animate-in fade-in slide-in-from-top-1 duration-150"
+                  )}
+                >
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setShowProtectiveEquipment((prev) => !prev)
+                      setIsOptionsMenuOpen(false)
+                    }}
+                    className="w-full px-4 py-2.5 text-left text-sm text-foreground transition-colors hover:bg-secondary"
+                  >
+                    {showProtectiveEquipment
+                      ? "Schutzeinrichtungen ausblenden"
+                      : "Schutzeinrichtungen einblenden"}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
