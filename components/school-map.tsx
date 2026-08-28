@@ -65,6 +65,7 @@ export function SchoolMap() {
 
   const [viewportWidth, setViewportWidth] = useState(0)
   const [windowHeight, setWindowHeight] = useState(0)
+  const [searchBottom, setSearchBottom] = useState(0)
 
   // Vollbild: Karte über den ganzen Bildschirm, Details als ziehbares Bottom-Sheet.
   const isFullscreen = isExpandToggled
@@ -104,6 +105,22 @@ export function SchoolMap() {
     observer.observe(el)
     return () => observer.disconnect()
   }, [])
+
+  // Untere Kante der Suchleiste: im Vollbild die obere Grenze der sichtbaren Karte.
+  useEffect(() => {
+    const el = searchWrapperRef.current
+    if (!el || typeof ResizeObserver === "undefined") return
+
+    const updateBottom = () => {
+      const next = el.getBoundingClientRect().bottom
+      setSearchBottom((prev) => (Math.abs(prev - next) > 0.5 ? next : prev))
+    }
+
+    updateBottom()
+    const observer = new ResizeObserver(updateBottom)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [isFullscreen, windowHeight])
 
   const baseViewportHeight =
     viewportWidth > 0
@@ -271,11 +288,17 @@ export function SchoolMap() {
     }
   }, [isFullscreen, isSearchOpen, query])
 
-  const setSheetSnap = sheet.setSnap
+  const { collapse: collapseSheet, revealDetails } = sheet
   useEffect(() => {
     if (!isFullscreen) return
-    setSheetSnap(selected ? "half" : "peek")
-  }, [isFullscreen, selected, setSheetSnap])
+    if (selected) revealDetails()
+    else collapseSheet()
+  }, [collapseSheet, isFullscreen, revealDetails, selected])
+
+  const toggleSheet = useCallback(() => {
+    if (sheet.isExpanded) sheet.collapse()
+    else sheet.expand()
+  }, [sheet])
 
   // Ein Tipp auf die Kopfzeile klappt das Sheet um; ein Ziehen darf das nicht auslösen.
   const sheetTapStartRef = useRef<{ x: number; y: number } | null>(null)
@@ -285,9 +308,9 @@ export function SchoolMap() {
       sheetTapStartRef.current = null
       if (!start) return
       if (Math.abs(e.clientX - start.x) > 6 || Math.abs(e.clientY - start.y) > 6) return
-      setSheetSnap(sheet.snap === "peek" ? "half" : "peek")
+      toggleSheet()
     },
-    [setSheetSnap, sheet.snap]
+    [toggleSheet]
   )
 
   const handleWheel = useCallback(
@@ -392,12 +415,21 @@ export function SchoolMap() {
 
   // Im Vollbild wandern die unteren Bedienelemente mit dem Sheet nach oben.
   const controlsBottom = Math.min(sheet.visibleHeight + 12, Math.round(windowHeight * 0.5))
+  const sheetMotion = sheet.isDragging ? "none" : "transform 0.28s cubic-bezier(0.22, 1, 0.36, 1)"
   const controlsStyle = isFullscreen
     ? {
         bottom: controlsBottom,
         transition: sheet.isDragging ? "none" : "bottom 0.28s cubic-bezier(0.22, 1, 0.36, 1)",
       }
     : undefined
+
+  // Die Karte bleibt mittig zwischen Suchleiste und Sheet. Weil das eine reine
+  // Verschiebung im Bildschirmraum ist, bleibt der aktuell zentrierte Punkt der
+  // zentrierte Punkt – unabhängig von Zoom und Verschiebung.
+  const mapShift =
+    isFullscreen && windowHeight > 0
+      ? Math.round((searchBottom + (windowHeight - sheet.visibleHeight)) / 2 - windowHeight / 2)
+      : 0
 
   return (
     <div
@@ -546,6 +578,14 @@ export function SchoolMap() {
             <div
               className={isFullscreen ? "h-full w-full" : undefined}
               style={{
+                transform: `translateY(${mapShift}px)`,
+                transition: sheetMotion,
+                willChange: "transform",
+              }}
+            >
+            <div
+              className={isFullscreen ? "h-full w-full" : undefined}
+              style={{
                 transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
                 transformOrigin: "center center",
                 transition: isDraggingRef.current ? "none" : "transform 0.05s linear",
@@ -628,6 +668,7 @@ export function SchoolMap() {
                     })
                   : null}
               </svg>
+            </div>
             </div>
           </div>
 
@@ -761,11 +802,8 @@ export function SchoolMap() {
             "rounded-t-2xl border-t border-border bg-card shadow-[0_-8px_30px_rgba(0,0,0,0.25)]"
           )}
           style={{
-            height: sheet.height,
-            transform: `translateY(${sheet.translate}px)`,
-            transition: sheet.isDragging
-              ? "none"
-              : "transform 0.28s cubic-bezier(0.22, 1, 0.36, 1)",
+            height: sheet.visibleHeight,
+            transition: sheet.isDragging ? "none" : "height 0.28s cubic-bezier(0.22, 1, 0.36, 1)",
           }}
           aria-live="polite"
         >
@@ -793,13 +831,13 @@ export function SchoolMap() {
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation()
-                  sheet.setSnap(sheet.snap === "full" ? "peek" : "full")
+                  toggleSheet()
                 }}
                 className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-                aria-label={sheet.snap === "full" ? "Details einklappen" : "Details ausklappen"}
-                aria-expanded={sheet.snap !== "peek"}
+                aria-label={sheet.isExpanded ? "Details einklappen" : "Details ausklappen"}
+                aria-expanded={sheet.isExpanded}
               >
-                {sheet.snap === "full" ? (
+                {sheet.isExpanded ? (
                   <ChevronDown className="h-5 w-5" aria-hidden="true" />
                 ) : (
                   <ChevronUp className="h-5 w-5" aria-hidden="true" />
