@@ -3,18 +3,18 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import type { PointerEvent as ReactPointerEvent } from "react"
 
-export type SheetSnap = "peek" | "half" | "full"
-
 /** Höhe, die im eingeklappten Zustand sichtbar bleibt (Griff + Titelzeile). */
 const SHEET_PEEK_HEIGHT = 116
 
+/** Ganz aufgezogen bleibt oben ein Streifen Karte sichtbar. */
 const SHEET_FULL_RATIO = 0.9
-const SHEET_HALF_RATIO = 0.45
-/** px/ms – ab diesem Tempo entscheidet die Wischrichtung statt der Nähe. */
-const FLING_VELOCITY = 0.5
+/** Höhe, auf die ein neu ausgewähltes Gebäude das Sheet mindestens aufzieht. */
+const SHEET_REVEAL_RATIO = 0.45
 
-/** Von weit offen bis eingeklappt – ein Wisch springt genau einen Schritt. */
-const SNAP_ORDER: SheetSnap[] = ["full", "half", "peek"]
+/** px/ms – ab diesem Tempo entscheidet die Wischrichtung statt der Position. */
+const FLING_VELOCITY = 0.5
+/** Nur so nah an den beiden Enden rastet das Sheet ein, dazwischen bleibt es frei. */
+const EDGE_SNAP = 56
 
 const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(max, value))
 
@@ -25,47 +25,32 @@ interface UseBottomSheetOptions {
 }
 
 /**
- * Ziehbares Bottom-Sheet nach Google-Maps-Vorbild: drei Rastpunkte, Maus- und
- * Touch-Bedienung über Pointer-Events, Wisch-Geschwindigkeit wird ausgewertet.
+ * Frei ziehbares Bottom-Sheet: die Höhe folgt stufenlos dem Finger und bleibt
+ * beim Loslassen stehen. Eingerastet wird nur an den beiden Enden – entweder
+ * weil man dort loslässt oder weil man in eine Richtung wischt.
  *
  * Bewegung und Loslassen hängen bewusst am window statt am Griff selbst – so
  * bleibt das Sheet nicht auf halber Strecke stehen, wenn der Zeiger den Griff
  * verlässt oder die Geste abgebrochen wird.
  */
 export function useBottomSheet({ enabled, viewportHeight }: UseBottomSheetOptions) {
-  const [snap, setSnap] = useState<SheetSnap>("peek")
-  const [dragTranslate, setDragTranslate] = useState<number | null>(null)
-
   const height = viewportHeight > 0 ? Math.round(viewportHeight * SHEET_FULL_RATIO) : 0
-  const peekTranslate = Math.max(0, height - SHEET_PEEK_HEIGHT)
-  const halfTranslate = clamp(
-    height - Math.round(viewportHeight * SHEET_HALF_RATIO),
-    0,
-    peekTranslate
-  )
+  const minVisible = Math.min(SHEET_PEEK_HEIGHT, height)
 
-  const snapTranslate = useCallback(
-    (target: SheetSnap) => {
-      if (target === "full") return 0
-      if (target === "half") return halfTranslate
-      return peekTranslate
-    },
-    [halfTranslate, peekTranslate]
-  )
+  const [requestedVisible, setRequestedVisible] = useState(SHEET_PEEK_HEIGHT)
+  const [isDragging, setIsDragging] = useState(false)
 
-  const nearestSnap = useCallback(
-    (value: number) =>
-      SNAP_ORDER.reduce((best, candidate) =>
-        Math.abs(snapTranslate(candidate) - value) < Math.abs(snapTranslate(best) - value)
-          ? candidate
-          : best
-      ),
-    [snapTranslate]
-  )
+  const visibleHeight = height > 0 ? clamp(requestedVisible, minVisible, height) : 0
+  const isExpanded = visibleHeight > minVisible + 8
 
-  const translate = dragTranslate ?? snapTranslate(snap)
-  const visibleHeight = Math.max(0, height - translate)
-  const isDragging = dragTranslate !== null
+  const collapse = useCallback(() => setRequestedVisible(SHEET_PEEK_HEIGHT), [])
+  const expand = useCallback(() => setRequestedVisible(height), [height])
+
+  /** Zieht das Sheet auf, ohne ein bereits weiter geöffnetes wieder zu verkleinern. */
+  const revealDetails = useCallback(() => {
+    const target = clamp(Math.round(viewportHeight * SHEET_REVEAL_RATIO), minVisible, height)
+    setRequestedVisible((prev) => Math.max(prev, target))
+  }, [height, minVisible, viewportHeight])
 
   /** Beendet eine laufende Ziehgeste – auch bei Moduswechsel oder Unmount. */
   const stopDragRef = useRef<(() => void) | null>(null)
@@ -73,8 +58,8 @@ export function useBottomSheet({ enabled, viewportHeight }: UseBottomSheetOption
   useEffect(() => {
     if (enabled) return
     stopDragRef.current?.()
-    setDragTranslate(null)
-    setSnap("peek")
+    setIsDragging(false)
+    setRequestedVisible(SHEET_PEEK_HEIGHT)
   }, [enabled])
 
   useEffect(() => () => stopDragRef.current?.(), [])
@@ -88,10 +73,13 @@ export function useBottomSheet({ enabled, viewportHeight }: UseBottomSheetOption
 
       const pointerId = e.pointerId
       const startY = e.clientY
-      const startTranslate = snapTranslate(snap)
+      const startVisible = visibleHeight
       let lastY = startY
       let lastTime = performance.now()
       let velocity = 0
+
+      // Nach oben ziehen (kleineres clientY) vergrößert die sichtbare Höhe.
+      const visibleAt = (clientY: number) => clamp(startVisible + (startY - clientY), minVisible, height)
 
       const stopDrag = () => {
         window.removeEventListener("pointermove", handleMove)
@@ -107,25 +95,26 @@ export function useBottomSheet({ enabled, viewportHeight }: UseBottomSheetOption
         if (elapsed > 0) velocity = (ev.clientY - lastY) / elapsed
         lastY = ev.clientY
         lastTime = now
-        setDragTranslate(clamp(startTranslate + (ev.clientY - startY), 0, peekTranslate))
+        setRequestedVisible(visibleAt(ev.clientY))
       }
 
       const handleEnd = (ev: PointerEvent) => {
         if (ev.pointerId !== pointerId) return
         stopDrag()
+        setIsDragging(false)
 
-        let next: SheetSnap
+        const released = visibleAt(lastY)
         if (Math.abs(velocity) > FLING_VELOCITY) {
-          // Nach unten wischen klappt einen Rastpunkt weiter ein, nach oben weiter auf.
-          const step = velocity > 0 ? 1 : -1
-          const from = SNAP_ORDER.indexOf(nearestSnap(startTranslate))
-          next = SNAP_ORDER[clamp(from + step, 0, SNAP_ORDER.length - 1)]
+          // Wischen zieht bis ans jeweilige Ende durch.
+          setRequestedVisible(velocity > 0 ? SHEET_PEEK_HEIGHT : height)
+        } else if (released - minVisible < EDGE_SNAP) {
+          setRequestedVisible(SHEET_PEEK_HEIGHT)
+        } else if (height - released < EDGE_SNAP) {
+          setRequestedVisible(height)
         } else {
-          next = nearestSnap(clamp(startTranslate + (lastY - startY), 0, peekTranslate))
+          // Dazwischen bleibt das Sheet exakt dort stehen, wo es losgelassen wurde.
+          setRequestedVisible(released)
         }
-
-        setSnap(next)
-        setDragTranslate(null)
       }
 
       window.addEventListener("pointermove", handleMove)
@@ -133,18 +122,19 @@ export function useBottomSheet({ enabled, viewportHeight }: UseBottomSheetOption
       window.addEventListener("pointercancel", handleEnd)
       stopDragRef.current = stopDrag
 
-      setDragTranslate(startTranslate)
+      setIsDragging(true)
     },
-    [enabled, height, nearestSnap, peekTranslate, snap, snapTranslate]
+    [enabled, height, minVisible, visibleHeight]
   )
 
   return {
-    snap,
-    setSnap,
     height,
-    translate,
     visibleHeight,
     isDragging,
+    isExpanded,
+    collapse,
+    expand,
+    revealDetails,
     dragHandlers: { onPointerDown },
   }
 }
