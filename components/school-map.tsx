@@ -80,8 +80,6 @@ export function SchoolMap() {
       ? (viewportWidth * SVG_VIEWBOX_HEIGHT) / SVG_VIEWBOX_WIDTH
       : DEFAULT_VIEWPORT_HEIGHT
 
-  const mapViewportHeight = baseViewportHeight * Math.min(zoom, 2)
-
   const handleFloorChange = useCallback(
     (newFloor: Floor) => {
       setFloor(newFloor)
@@ -431,7 +429,7 @@ export function SchoolMap() {
               "select-none overflow-hidden rounded-lg touch-none",
               zoom > 1 ? "cursor-grab active:cursor-grabbing" : "cursor-default"
             )}
-            style={{ height: mapViewportHeight }}
+            style={{ height: baseViewportHeight }}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
