@@ -432,7 +432,7 @@ export function SchoolMap() {
                   <path
                     d={FELDSCHULE_UMRISS_D}
                     className="fill-transparent stroke-foreground pointer-events-none"
-                    style={{ strokeWidth: STROKE_WIDTH / zoom }}
+                    style={{ strokeWidth: STROKE_WIDTH }}
                     vectorEffect="non-scaling-stroke"
                     aria-hidden="true"
                   />
