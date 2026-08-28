@@ -1,7 +1,7 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { Maximize2, Minimize2, MoreHorizontal, Search, X } from "lucide-react"
+import { Maximize2, Minimize2, MoreVertical, Search, X } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 import {
@@ -525,7 +525,7 @@ export function SchoolMap() {
           </div>
 
           <div
-            className="absolute top-1 right-1 z-20 flex gap-1 rounded-lg border border-border bg-card/90 p-1 shadow-md backdrop-blur-sm md:top-5 md:right-5"
+            className="absolute top-0 right-0 z-20 flex flex-col gap-1 rounded-lg border border-border bg-card/90 p-1 shadow-md backdrop-blur-sm md:top-2 md:right-2"
             role="group"
             aria-label="Kartenoptionen"
           >
@@ -558,7 +558,7 @@ export function SchoolMap() {
                 aria-expanded={isOptionsMenuOpen}
                 aria-label="Weitere Kartenoptionen"
               >
-                <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
+                <MoreVertical className="h-4 w-4" aria-hidden="true" />
               </button>
 
               {isOptionsMenuOpen && (
