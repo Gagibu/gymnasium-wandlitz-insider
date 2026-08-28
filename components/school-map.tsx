@@ -1,7 +1,15 @@
 "use client"
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
-import { Search, X } from "lucide-react"
+import {
+  ChevronDown,
+  ChevronUp,
+  Maximize2,
+  Minimize2,
+  MoreVertical,
+  Search,
+  X,
+} from "lucide-react"
 import { cn } from "@/lib/utils"
 
 import {
@@ -23,6 +31,7 @@ import { getFloorDetails, searchBuildings } from "@/lib/school-map/search"
 import type { BuildingId, Floor, SearchResult } from "@/lib/school-map/types"
 import { clampPan, getTouchDist, getTouchMid } from "@/lib/school-map/zoom"
 import { renderBuildingShape } from "@/lib/school-map/render"
+import { useBottomSheet } from "@/lib/school-map/use-bottom-sheet"
 
 export function SchoolMap() {
   const [selected, setSelected] = useState<BuildingId | null>(null)
@@ -34,6 +43,11 @@ export function SchoolMap() {
 
   const searchWrapperRef = useRef<HTMLDivElement>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
+
+  const [isExpandToggled, setIsExpandToggled] = useState(false)
+  const [isOptionsMenuOpen, setIsOptionsMenuOpen] = useState(false)
+  const [showProtectiveEquipment, setShowProtectiveEquipment] = useState(false)
+  const optionsMenuRef = useRef<HTMLDivElement>(null)
 
   const [zoom, setZoom] = useState(1)
   const [pan, setPan] = useState({ x: 0, y: 0 })
@@ -50,10 +64,32 @@ export function SchoolMap() {
   const zoomRef = useRef(1)
 
   const [viewportWidth, setViewportWidth] = useState(0)
+  const [windowHeight, setWindowHeight] = useState(0)
+  const [searchBottom, setSearchBottom] = useState(0)
+
+  // Vollbild: Karte über den ganzen Bildschirm, Details als ziehbares Bottom-Sheet.
+  const isFullscreen = isExpandToggled
+
+  const sheet = useBottomSheet({ enabled: isFullscreen, viewportHeight: windowHeight })
 
   useEffect(() => {
     zoomRef.current = zoom
   }, [zoom])
+
+  // Auch beim Wechsel in den Vollbildmodus neu messen – z. B. wenn sich die
+  // Fensterhöhe seit dem letzten resize-Ereignis geändert hat.
+  useEffect(() => {
+    const update = () => setWindowHeight(window.visualViewport?.height ?? window.innerHeight)
+    update()
+    window.addEventListener("resize", update)
+    window.addEventListener("orientationchange", update)
+    window.visualViewport?.addEventListener("resize", update)
+    return () => {
+      window.removeEventListener("resize", update)
+      window.removeEventListener("orientationchange", update)
+      window.visualViewport?.removeEventListener("resize", update)
+    }
+  }, [isFullscreen])
 
   useEffect(() => {
     const el = containerRef.current
@@ -70,12 +106,26 @@ export function SchoolMap() {
     return () => observer.disconnect()
   }, [])
 
+  // Untere Kante der Suchleiste: im Vollbild die obere Grenze der sichtbaren Karte.
+  useEffect(() => {
+    const el = searchWrapperRef.current
+    if (!el || typeof ResizeObserver === "undefined") return
+
+    const updateBottom = () => {
+      const next = el.getBoundingClientRect().bottom
+      setSearchBottom((prev) => (Math.abs(prev - next) > 0.5 ? next : prev))
+    }
+
+    updateBottom()
+    const observer = new ResizeObserver(updateBottom)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [isFullscreen, windowHeight])
+
   const baseViewportHeight =
     viewportWidth > 0
       ? (viewportWidth * SVG_VIEWBOX_HEIGHT) / SVG_VIEWBOX_WIDTH
       : DEFAULT_VIEWPORT_HEIGHT
-
-  const mapViewportHeight = baseViewportHeight * Math.min(zoom, 2)
 
   const handleFloorChange = useCallback(
     (newFloor: Floor) => {
@@ -162,6 +212,24 @@ export function SchoolMap() {
     }
   }, [isSearchOpen, closeSearchResults])
 
+  useEffect(() => {
+    if (!isOptionsMenuOpen) return
+
+    const handlePointerDown = (event: MouseEvent | TouchEvent) => {
+      const target = event.target
+      if (!(target instanceof Node)) return
+      if (optionsMenuRef.current?.contains(target)) return
+      setIsOptionsMenuOpen(false)
+    }
+
+    document.addEventListener("mousedown", handlePointerDown)
+    document.addEventListener("touchstart", handlePointerDown)
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown)
+      document.removeEventListener("touchstart", handlePointerDown)
+    }
+  }, [isOptionsMenuOpen])
+
   const zoomTowards = useCallback(
     (newZoom: number, clientX: number, clientY: number) => {
       const container = containerRef.current
@@ -191,6 +259,59 @@ export function SchoolMap() {
     setZoom(1)
     setPan({ x: 0, y: 0 })
   }
+
+  // Beim Wechsel zwischen Vollbild und eingebetteter Ansicht ändert sich das
+  // Seitenverhältnis – ein verschobener Ausschnitt würde danach verrutscht wirken.
+  useEffect(() => {
+    zoomRef.current = 1
+    setZoom(1)
+    setPan({ x: 0, y: 0 })
+  }, [isFullscreen])
+
+  // Im Vollbild scrollt nur noch das Sheet, nicht die Seite dahinter.
+  useEffect(() => {
+    if (!isFullscreen) return
+
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = "hidden"
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return
+      if (isSearchOpen && query.trim().length > 0) return
+      setIsExpandToggled(false)
+    }
+    window.addEventListener("keydown", handleKeyDown)
+
+    return () => {
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener("keydown", handleKeyDown)
+    }
+  }, [isFullscreen, isSearchOpen, query])
+
+  const { collapse: collapseSheet, revealDetails } = sheet
+  useEffect(() => {
+    if (!isFullscreen) return
+    if (selected) revealDetails()
+    else collapseSheet()
+  }, [collapseSheet, isFullscreen, revealDetails, selected])
+
+  const toggleSheet = useCallback(() => {
+    if (sheet.isExpanded) sheet.collapse()
+    else sheet.expand()
+  }, [sheet])
+
+  // Ein Tipp auf die Kopfzeile klappt das Sheet um; ein Ziehen darf das nicht auslösen.
+  const sheetTapStartRef = useRef<{ x: number; y: number } | null>(null)
+  const handleSheetHeaderClick = useCallback(
+    (e: React.MouseEvent) => {
+      const start = sheetTapStartRef.current
+      sheetTapStartRef.current = null
+      if (!start) return
+      if (Math.abs(e.clientX - start.x) > 6 || Math.abs(e.clientY - start.y) > 6) return
+      toggleSheet()
+    },
+    [toggleSheet]
+  )
 
   const handleWheel = useCallback(
     (e: WheelEvent) => {
@@ -292,9 +413,40 @@ export function SchoolMap() {
     }
   }, [handleWheel, handleTouchStart, handleTouchMove, handleTouchEnd])
 
+  // Im Vollbild wandern die unteren Bedienelemente mit dem Sheet nach oben.
+  const controlsBottom = Math.min(sheet.visibleHeight + 12, Math.round(windowHeight * 0.5))
+  const sheetMotion = sheet.isDragging ? "none" : "transform 0.28s cubic-bezier(0.22, 1, 0.36, 1)"
+  const controlsStyle = isFullscreen
+    ? {
+        bottom: controlsBottom,
+        transition: sheet.isDragging ? "none" : "bottom 0.28s cubic-bezier(0.22, 1, 0.36, 1)",
+      }
+    : undefined
+
+  // Die Karte bleibt mittig zwischen Suchleiste und Sheet. Weil das eine reine
+  // Verschiebung im Bildschirmraum ist, bleibt der aktuell zentrierte Punkt der
+  // zentrierte Punkt – unabhängig von Zoom und Verschiebung.
+  const mapShift =
+    isFullscreen && windowHeight > 0
+      ? Math.round((searchBottom + (windowHeight - sheet.visibleHeight)) / 2 - windowHeight / 2)
+      : 0
+
   return (
-    <div className="flex flex-col gap-8">
-      <div ref={searchWrapperRef} className="relative z-30">
+    <div
+      className={cn(
+        isFullscreen
+          ? "fixed inset-0 z-[60] overflow-hidden bg-background"
+          : "flex flex-col gap-8"
+      )}
+    >
+      <div
+        ref={searchWrapperRef}
+        className={cn(
+          "relative z-30",
+          isFullscreen &&
+            "absolute left-3 right-3 top-3 z-40 md:left-4 md:right-auto md:top-4 md:w-[28rem]"
+        )}
+      >
         <div className="relative">
           <Search
             className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
@@ -322,9 +474,10 @@ export function SchoolMap() {
                 : undefined
             }
             className={cn(
-              "w-full rounded-xl border border-border bg-card py-3 pl-10 pr-10 text-sm md:text-base",
+              "w-full border border-border bg-card py-3 pl-10 pr-10 text-sm md:text-base",
               "text-foreground placeholder:text-muted-foreground",
-              "outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-ring/40"
+              "outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-ring/40",
+              isFullscreen ? "rounded-full shadow-lg" : "rounded-xl"
             )}
           />
           {query.length > 0 && (
@@ -400,21 +553,38 @@ export function SchoolMap() {
         )}
       </div>
 
-      <div ref={cardRef} className="relative rounded-xl border border-border bg-card p-1 md:p-6">
-        <div className="relative w-full">
+      <div
+        ref={cardRef}
+        className={cn(
+          isFullscreen
+            ? "absolute inset-0 z-0"
+            : "relative rounded-xl border border-border bg-card p-1 md:p-6"
+        )}
+      >
+        <div className={isFullscreen ? "absolute inset-0" : "relative w-full"}>
           <div
             ref={containerRef}
             className={cn(
-              "select-none overflow-hidden rounded-lg touch-none",
+              "select-none overflow-hidden touch-none",
+              isFullscreen ? "h-full w-full" : "rounded-lg",
               zoom > 1 ? "cursor-grab active:cursor-grabbing" : "cursor-default"
             )}
-            style={{ height: mapViewportHeight }}
+            style={isFullscreen ? undefined : { height: baseViewportHeight }}
             onMouseDown={handleMouseDown}
             onMouseMove={handleMouseMove}
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
           >
             <div
+              className={isFullscreen ? "h-full w-full" : undefined}
+              style={{
+                transform: `translateY(${mapShift}px)`,
+                transition: sheetMotion,
+                willChange: "transform",
+              }}
+            >
+            <div
+              className={isFullscreen ? "h-full w-full" : undefined}
               style={{
                 transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
                 transformOrigin: "center center",
@@ -424,7 +594,7 @@ export function SchoolMap() {
             >
               <svg
                 viewBox="0 0 155.79399 88.953056"
-                className="block h-auto w-full"
+                className={cn("block", isFullscreen ? "h-full w-full" : "h-auto w-full")}
                 role="group"
                 aria-label="Interaktiver Schulplan"
               >
@@ -432,7 +602,7 @@ export function SchoolMap() {
                   <path
                     d={FELDSCHULE_UMRISS_D}
                     className="fill-transparent stroke-foreground pointer-events-none"
-                    style={{ strokeWidth: STROKE_WIDTH / zoom }}
+                    style={{ strokeWidth: STROKE_WIDTH }}
                     vectorEffect="non-scaling-stroke"
                     aria-hidden="true"
                   />
@@ -499,10 +669,87 @@ export function SchoolMap() {
                   : null}
               </svg>
             </div>
+            </div>
           </div>
 
           <div
-            className="absolute bottom-1 left-1 z-20 flex gap-1 rounded-lg border border-border bg-card/90 p-1 shadow-md backdrop-blur-sm md:bottom-5 md:left-5"
+            className={cn(
+              "absolute z-20 flex flex-col gap-1 border border-border bg-card/90 p-1 shadow-md backdrop-blur-sm",
+              isFullscreen
+                ? "right-3 top-[4.5rem] rounded-xl md:right-4 md:top-4"
+                : "right-0 top-0 rounded-lg md:right-2 md:top-2"
+            )}
+            role="group"
+            aria-label="Kartenoptionen"
+          >
+            <button
+              type="button"
+              onClick={() => setIsExpandToggled((prev) => !prev)}
+              className={cn(
+                "flex h-9 w-9 items-center justify-center rounded-md transition-all duration-200",
+                "text-muted-foreground hover:bg-secondary hover:text-foreground"
+              )}
+              aria-pressed={isExpandToggled}
+              aria-label={isExpandToggled ? "Vollbild schließen" : "Karte im Vollbild öffnen"}
+            >
+              {isExpandToggled ? (
+                <Minimize2 className="h-4 w-4" aria-hidden="true" />
+              ) : (
+                <Maximize2 className="h-4 w-4" aria-hidden="true" />
+              )}
+            </button>
+
+            <div ref={optionsMenuRef} className="relative">
+              <button
+                type="button"
+                onClick={() => setIsOptionsMenuOpen((prev) => !prev)}
+                className={cn(
+                  "flex h-9 w-9 items-center justify-center rounded-md transition-all duration-200",
+                  "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                )}
+                aria-haspopup="menu"
+                aria-expanded={isOptionsMenuOpen}
+                aria-label="Weitere Kartenoptionen"
+              >
+                <MoreVertical className="h-4 w-4" aria-hidden="true" />
+              </button>
+
+              {isOptionsMenuOpen && (
+                <div
+                  role="menu"
+                  aria-label="Weitere Kartenoptionen"
+                  className={cn(
+                    "absolute right-0 top-full z-30 mt-2 min-w-56 overflow-hidden",
+                    "rounded-xl border border-border bg-popover shadow-lg",
+                    "animate-in fade-in slide-in-from-top-1 duration-150"
+                  )}
+                >
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      setShowProtectiveEquipment((prev) => !prev)
+                      setIsOptionsMenuOpen(false)
+                    }}
+                    className="w-full px-4 py-2.5 text-left text-sm text-foreground transition-colors hover:bg-secondary"
+                  >
+                    {showProtectiveEquipment
+                      ? "Schutzeinrichtungen ausblenden"
+                      : "Schutzeinrichtungen einblenden"}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div
+            className={cn(
+              "absolute z-20 flex gap-1 border border-border bg-card/90 p-1 shadow-md backdrop-blur-sm",
+              isFullscreen
+                ? "left-3 rounded-xl md:left-4"
+                : "bottom-1 left-1 rounded-lg md:bottom-5 md:left-5"
+            )}
+            style={controlsStyle}
             role="group"
             aria-label="Etagenauswahl"
           >
@@ -527,10 +774,13 @@ export function SchoolMap() {
           {zoom > 1 && (
             <button
               onClick={resetZoom}
+              style={controlsStyle}
               className={cn(
-                "absolute bottom-1 right-1 z-20 rounded-lg border px-3 py-1.5 text-xs font-medium transition-all duration-200",
+                "absolute z-20 border px-3 py-1.5 text-xs font-medium transition-all duration-200",
                 "border-border bg-card/90 text-foreground shadow-md backdrop-blur-sm hover:bg-secondary",
-                "md:bottom-5 md:right-5"
+                isFullscreen
+                  ? "right-3 rounded-xl md:right-4"
+                  : "bottom-1 right-1 rounded-lg md:bottom-5 md:right-5"
               )}
             >
               Zoom zurücksetzen
@@ -538,12 +788,119 @@ export function SchoolMap() {
           )}
         </div>
 
-        <p className="text-balance text-center text-sm leading-relaxed text-muted-foreground md:text-base">
-          Klicke auf ein Gebäude oder einen Bereich, um mehr zu erfahren.
-        </p>
+        {!isFullscreen && (
+          <p className="text-balance text-center text-sm leading-relaxed text-muted-foreground md:text-base">
+            Klicke auf ein Gebäude oder einen Bereich, um mehr zu erfahren.
+          </p>
+        )}
       </div>
 
-      <div aria-live="polite">
+      {isFullscreen ? (
+        <div
+          className={cn(
+            "absolute inset-x-0 bottom-0 z-40 flex flex-col overflow-hidden",
+            "rounded-t-2xl border-t border-border bg-card shadow-[0_-8px_30px_rgba(0,0,0,0.25)]"
+          )}
+          style={{
+            height: sheet.visibleHeight,
+            transition: sheet.isDragging ? "none" : "height 0.28s cubic-bezier(0.22, 1, 0.36, 1)",
+          }}
+          aria-live="polite"
+        >
+          <div
+            onPointerDown={(e) => {
+              sheetTapStartRef.current = { x: e.clientX, y: e.clientY }
+              sheet.dragHandlers.onPointerDown(e)
+            }}
+            onClick={handleSheetHeaderClick}
+            className="shrink-0 cursor-grab touch-none select-none px-5 pb-3 pt-2 active:cursor-grabbing"
+          >
+            <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-border" aria-hidden="true" />
+            <div className="flex items-start gap-3">
+              <div className="min-w-0 flex-1">
+                <h2 className="truncate text-lg font-bold text-foreground md:text-xl">
+                  {selected ? buildingsById[selected].name : "Schulplan Gymnasium Wandlitz"}
+                </h2>
+                <p className="mt-0.5 truncate text-sm text-muted-foreground">
+                  {selected
+                    ? `${floorLabels[floor]} · ${selectedDetails?.rooms.length ?? 0} Räume & Bereiche`
+                    : "Tippe auf ein Gebäude, um Details zu sehen"}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  toggleSheet()
+                }}
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                aria-label={sheet.isExpanded ? "Details einklappen" : "Details ausklappen"}
+                aria-expanded={sheet.isExpanded}
+              >
+                {sheet.isExpanded ? (
+                  <ChevronDown className="h-5 w-5" aria-hidden="true" />
+                ) : (
+                  <ChevronUp className="h-5 w-5" aria-hidden="true" />
+                )}
+              </button>
+              {selected && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setSelected(null)
+                  }}
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-secondary text-muted-foreground transition-colors hover:text-foreground"
+                  aria-label="Auswahl aufheben"
+                >
+                  <X className="h-4 w-4" aria-hidden="true" />
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div
+            className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-10"
+            style={{ touchAction: "pan-y" }}
+          >
+            {selected && selectedDetails ? (
+              <>
+                <span className="inline-flex rounded-lg bg-primary/15 px-3 py-1 text-sm font-semibold text-primary">
+                  {floorLabels[floor]}
+                </span>
+                <p className="mt-3 leading-relaxed text-muted-foreground">
+                  {selectedDetails.description}
+                </p>
+                {selectedDetails.rooms.length > 0 && (
+                  <>
+                    <h3 className="mt-5 mb-3 text-sm font-semibold uppercase tracking-wider text-foreground">
+                      Räume & Bereiche
+                    </h3>
+                    <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                      {selectedDetails.rooms.map((room) => (
+                        <li
+                          key={room}
+                          className="flex items-center gap-2 rounded-lg bg-secondary px-3 py-2 text-sm text-foreground"
+                        >
+                          <span className="h-2 w-2 shrink-0 rounded-full bg-primary" />
+                          {room}
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+              </>
+            ) : (
+              <p className="leading-relaxed text-muted-foreground">
+                Noch kein Gebäude oder Bereich ausgewählt. Wähle ein Gebäude im Plan aus oder nutze
+                die Suche, um Details anzuzeigen. Ziehe diese Leiste nach oben, um mehr Platz für die
+                Beschreibung zu bekommen.
+              </p>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div aria-live="polite">
         {selected && selectedDetails ? (
           <div className="animate-in fade-in rounded-xl border border-border bg-card p-6 duration-300">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
@@ -581,7 +938,8 @@ export function SchoolMap() {
             </p>
           </div>
         )}
-      </div>
+        </div>
+      )}
     </div>
   )
 }
